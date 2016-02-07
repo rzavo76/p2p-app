@@ -1,4 +1,5 @@
 *.class
+log_peer_*
 
 # Mobile Tools for Java (J2ME)
 .mtj.tmp/
