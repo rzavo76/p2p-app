@@ -9,7 +9,7 @@ public class BTLogger {
     private static SimpleDateFormat sdf;
     private static BTLogger instance = null;
     private BTLogger() {}
-    private void writeToFile(String filename, String logString) {
+    private synchronized void writeToFile(String filename, String logString) {
     	try {
     	File log = new File(filename);
     	if(!log.exists()) { //make log file if it doesn't exist
