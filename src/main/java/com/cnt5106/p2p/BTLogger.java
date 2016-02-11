@@ -20,9 +20,9 @@ public class BTLogger {
     	}
     	return instance;
     }
-    public synchronized void writeToLog(String pid, String logString) {
+    public synchronized void writeToLog(int pid, String logString) {
     	try {
-    	String filename = "log_peer_" + pid + ".log";
+    	String filename = "log_peer_" + Integer.toString(pid) + ".log";
     	File log = new File(filename);
     	if(!log.exists()) { // make log file if it doesn't exist
     		log.createNewFile();
@@ -35,66 +35,66 @@ public class BTLogger {
     		System.err.println("Failed to write to log file.");
     	}
     }
-	public String TCPConnectTo(String p1id, String p2id) {
-		String logString = String.format("%s: Peer %s makes a connection to Peer %s.\n", 
+	public String TCPConnectTo(int p1id, int p2id) {
+		String logString = String.format("%s: Peer %d makes a connection to Peer %d.\n", 
 			sdf.format(Calendar.getInstance().getTime()), p1id, p2id);
 		return logString;
 	}
-	public String TCPConnectFrom(String p1id, String p2id) {
-		String logString = String.format("%s: Peer %s is connected from Peer %s.\n", 
+	public String TCPConnectFrom(int p1id, int p2id) {
+		String logString = String.format("%s: Peer %d is connected from Peer %d.\n", 
 			sdf.format(Calendar.getInstance().getTime()), p1id, p2id);
 		return logString;
 	}
-	public String changeOfPrefNeighbors(String pid, String[] nid) {
+	public String changeOfPrefNeighbors(int pid, int[] nid) {
 		StringBuilder neighborList = new StringBuilder();
 		String delim = "";
-		for(String s : nid) {
-			neighborList = neighborList.append(delim).append(s);
+		for(int s : nid) {
+			neighborList = neighborList.append(delim).append(Integer.toString(s));
 			delim = ", ";
 		}
-		String logString = String.format("%s: Peer %s has the preferred neighbors %s.\n", 
+		String logString = String.format("%s: Peer %d has the preferred neighbors %s.\n", 
 			sdf.format(Calendar.getInstance().getTime()), pid, neighborList);
 		return logString;
 	}
-	public String changeOfOUNeighbor(String pid, String nid) {
-		String logString = String.format("%s: Peer %s has the optimistically unchoked neighbor " 
-			+ "%s.\n", sdf.format(Calendar.getInstance().getTime()), pid, nid);
+	public String changeOfOUNeighbor(int pid, int nid) {
+		String logString = String.format("%s: Peer %d has the optimistically unchoked neighbor " 
+			+ "%d.\n", sdf.format(Calendar.getInstance().getTime()), pid, nid);
 		return logString;
 	}
-	public String unchoked(String p1id, String p2id) {
-		String logString = String.format("%s: Peer %s is unchoked by %s.\n", 
+	public String unchoked(int p1id, int p2id) {
+		String logString = String.format("%s: Peer %d is unchoked by %d.\n", 
 			sdf.format(Calendar.getInstance().getTime()), p1id, p2id);
 		return logString;
 	}
-	public String choked(String p1id, String p2id) {
-		String logString = String.format("%s: Peer %s is choked by %s.\n", 
+	public String choked(int p1id, int p2id) {
+		String logString = String.format("%s: Peer %d is choked by %d.\n", 
 			sdf.format(Calendar.getInstance().getTime()), p1id, p2id);
 		return logString;
 	}
-	public String receivedHave(String p1id, String p2id, String piece) {
-		String logString = String.format("%s: Peer %s received the 'have' message from %s for the " 
-			+ "piece %s.\n", sdf.format(Calendar.getInstance().getTime()), p1id, p2id, piece);
+	public String receivedHave(int p1id, int p2id, int piece) {
+		String logString = String.format("%s: Peer %d received the 'have' message from %d for the " 
+			+ "piece %d.\n", sdf.format(Calendar.getInstance().getTime()), p1id, p2id, piece);
 		return logString;
 	}
-	public String receivedInterested(String p1id, String p2id) {
-		String logString = String.format("%s: Peer %s received the 'interested' message from " 
-			+ "%s.\n", sdf.format(Calendar.getInstance().getTime()), p1id, p2id);
+	public String receivedInterested(int p1id, int p2id) {
+		String logString = String.format("%s: Peer %d received the 'interested' message from " 
+			+ "%d.\n", sdf.format(Calendar.getInstance().getTime()), p1id, p2id);
 		return logString;
 	}
-	public String receivedNotInterested(String p1id, String p2id) {
-		String logString = String.format("%s: Peer %s received the 'not interested' message from "
-			+ "%s.\n", sdf.format(Calendar.getInstance().getTime()), p1id, p2id);
+	public String receivedNotInterested(int p1id, int p2id) {
+		String logString = String.format("%s: Peer %d received the 'not interested' message from "
+			+ "%d.\n", sdf.format(Calendar.getInstance().getTime()), p1id, p2id);
 		return logString;
 	}
-	public String downloadedPiece(String p1id, String pieceIndex, 
-		String p2id, String numberPieces) {
-		String logString = String.format("%s: Peer %s has downloaded the piece %s from %s. Now "  
-			+ "the number of pieces it has is %s.\n", sdf.format(Calendar.getInstance().getTime()), 
+	public String downloadedPiece(int p1id, int pieceIndex, 
+		int p2id, int numberPieces) {
+		String logString = String.format("%s: Peer %d has downloaded the piece %d from %d. Now "  
+			+ "the number of pieces it has is %d.\n", sdf.format(Calendar.getInstance().getTime()), 
 			p1id, pieceIndex, p2id, numberPieces);
 		return logString;
 	}
-	public String downloadedFile(String pid) {
-		String logString = String.format("%s: Peer %s has downloaded the complete file.\n", 
+	public String downloadedFile(int pid) {
+		String logString = String.format("%s: Peer %d has downloaded the complete file.\n", 
 			sdf.format(Calendar.getInstance().getTime()), pid);
 		return logString;
 	}

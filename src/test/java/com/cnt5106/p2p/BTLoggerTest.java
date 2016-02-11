@@ -8,9 +8,9 @@ import java.lang.*;
 import java.util.*;
 
 public class BTLoggerTest {
-	private String readLogAndDelete(String pid) {
+	private String readLogAndDelete(int pid) {
 		try {
-			String filename = "log_peer_" + pid + ".log";
+			String filename = "log_peer_" + Integer.toString(pid) + ".log";
 	    	File log = new File(filename);
 	    	Scanner in = new Scanner(log);
 			String logString = in.nextLine();
@@ -19,16 +19,16 @@ public class BTLoggerTest {
 		} catch (Exception e) {
             e.printStackTrace();
         }
-        return "hello";
+        return "";
 	}
     @Test
     public void writeToLogs() {
         try {
 	        BTLogger log = BTLogger.getInstance();
-			String p1id = "1001";
-			String p2id = "1002";
-			String p3id = "1004";
-			String p4id = "1005";
+			int p1id = 1001;
+			int p2id = 1002;
+			int p3id = 1004;
+			int p4id = 1005;
 			String logString;
 			String logString2;
 			logString = log.TCPConnectTo(p1id, p2id);
@@ -45,9 +45,9 @@ public class BTLoggerTest {
     public void TCPConnectToORFrom() {
     	try {
 	        BTLogger log = BTLogger.getInstance();
-			String p1id = "1001";
-			String p3id = "1004";
-			String p4id = "1005";
+			int p1id = 1001;
+			int p3id = 1004;
+			int p4id = 1005;
 			String logString;
 			String time;
 			SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
@@ -67,11 +67,11 @@ public class BTLoggerTest {
     public void changePreferredOROptimisticallyUnchokedNeighbors() {
     	try {
 			BTLogger log = BTLogger.getInstance();
-			String p1id = "1001";
-			String p2id = "1002";
-			String p3id = "1004";
-			String p4id = "1005";
-			String[] neighborList = {p2id, p3id, p4id};
+			int p1id = 1001;
+			int p2id = 1002;
+			int p3id = 1004;
+			int p4id = 1005;
+			int[] neighborList = {p2id, p3id, p4id};
 			SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
 			String logString;
 			String time;
@@ -93,8 +93,8 @@ public class BTLoggerTest {
     public void chokeORUnchoke() {
     	try {
     		BTLogger log = BTLogger.getInstance();
-			String p1id = "1001";
-			String p2id = "1002";
+			int p1id = 1001;
+			int p2id = 1002;
 			SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
 			String logString;
 			String time;
@@ -114,12 +114,12 @@ public class BTLoggerTest {
     public void receivedHaveORInterestedORUninterested() {
     	try {
     		BTLogger log = BTLogger.getInstance();
-			String p1id = "1001";
-			String p2id = "1002";
+			int p1id = 1001;
+			int p2id = 1002;
 			SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
 			String logString;
 			String time;
-			logString = log.receivedHave(p1id, p2id, "4");
+			logString = log.receivedHave(p1id, p2id, 4);
 			time = sdf.format(Calendar.getInstance().getTime());
 			Assert.assertEquals(time + ": Peer 1001 received the 'have' message from 1002 " 
 				+ "for the piece 4.\n", logString);
@@ -142,12 +142,12 @@ public class BTLoggerTest {
     public void downloadedANDTimeCheck() {
     	try {
     		BTLogger log = BTLogger.getInstance();
-			String p1id = "1001";
-			String p2id = "1002";
+			int p1id = 1001;
+			int p2id = 1002;
 			SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
 			String logString;
 			String time;
-			logString = log.downloadedPiece(p1id, "9", p2id, "72");
+			logString = log.downloadedPiece(p1id, 9, p2id, 72);
 			time = sdf.format(Calendar.getInstance().getTime());
 			Assert.assertEquals(time + ": Peer 1001 has downloaded the piece 9 from 1002. Now " 
 				+ "the number of pieces it has is 72.\n", logString);
