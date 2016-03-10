@@ -2,6 +2,10 @@ package com.cnt5106.p2p;
 
 import org.junit.Test;
 import org.junit.Assert;
+
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.text.*;
 import java.io.*;
 import java.lang.*;
@@ -10,11 +14,14 @@ import java.util.*;
 public class BTLoggerTest {
 	private String readLogAndDelete(int pid) {
 		try {
-			String filename = "log_peer_" + Integer.toString(pid) + ".log";
-	    	File log = new File(filename);
-	    	Scanner in = new Scanner(log);
+			Path filePath = FileSystems.getDefault().getPath("log_peer_" + pid + ".log");
+	    	if (!Files.exists(filePath))
+			{
+				filePath = Files.createFile(filePath);
+			}
+	    	Scanner in = new Scanner(filePath);
 			String logString = in.nextLine();
-    		log.delete();
+			Files.delete(filePath);
     		return logString;
 		} catch (Exception e) {
             e.printStackTrace();

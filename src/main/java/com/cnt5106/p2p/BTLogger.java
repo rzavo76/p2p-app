@@ -2,6 +2,9 @@ package com.cnt5106.p2p;
 
 // BTLogger class created by Ryan Zavoral Feb. 5, 2016.
 
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.text.*;
 import java.util.*;
 import java.io.*;
@@ -20,14 +23,14 @@ public class BTLogger {
     	}
     	return instance;
     }
-    public synchronized void writeToLog(int pid, String logString) {
+    public synchronized void  writeToLog(int pid, String logString) {
     	try {
-    	String filename = "log_peer_" + Integer.toString(pid) + ".log";
-    	File log = new File(filename);
-    	if(!log.exists()) { // make log file if it doesn't exist
-    		log.createNewFile();
-    	}
-	    	FileOutputStream toLog = new FileOutputStream(log, true); // append to end of file
+			Path log = FileSystems.getDefault().getPath("log_peer_" + Integer.toString(pid) + ".log");
+			if (!Files.exists(log))
+			{
+				Files.createFile(log);
+			}
+	    	FileOutputStream toLog = new FileOutputStream(log.toString(), true); // append to end of file
 	    	toLog.write(logString.getBytes());
 	    	toLog.flush();
 	    	toLog.close();
