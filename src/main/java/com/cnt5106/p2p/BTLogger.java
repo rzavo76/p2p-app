@@ -23,20 +23,16 @@ public class BTLogger {
     	}
     	return instance;
     }
-    public synchronized void  writeToLog(int pid, String logString) {
-    	try {
-			Path log = FileSystems.getDefault().getPath("log_peer_" + Integer.toString(pid) + ".log");
-			if (!Files.exists(log))
-			{
-				Files.createFile(log);
-			}
-	    	FileOutputStream toLog = new FileOutputStream(log.toString(), true); // append to end of file
-	    	toLog.write(logString.getBytes());
-	    	toLog.flush();
-	    	toLog.close();
-    	} catch(IOException ie) {
-    		System.err.println("Failed to write to log file.");
-    	}
+    public synchronized void  writeToLog(int pid, String logString) throws IOException {
+		Path log = FileSystems.getDefault().getPath("log_peer_" + Integer.toString(pid) + ".log");
+		if (!Files.exists(log))
+		{
+			Files.createFile(log);
+		}
+    	FileOutputStream toLog = new FileOutputStream(log.toString(), true); // append to end of file
+    	toLog.write(logString.getBytes());
+    	toLog.flush();
+    	toLog.close();
     }
 	public String TCPConnectTo(int p1id, int p2id) {
 		String logString = String.format("%s: Peer %d makes a connection to Peer %d.\n", 

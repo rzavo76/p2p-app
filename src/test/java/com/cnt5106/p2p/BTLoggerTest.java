@@ -12,21 +12,16 @@ import java.lang.*;
 import java.util.*;
 
 public class BTLoggerTest {
-	private String readLogAndDelete(int pid) {
-		try {
-			Path filePath = FileSystems.getDefault().getPath("log_peer_" + pid + ".log");
-	    	if (!Files.exists(filePath))
-			{
-				filePath = Files.createFile(filePath);
-			}
-	    	Scanner in = new Scanner(filePath);
-			String logString = in.nextLine();
-			Files.delete(filePath);
-    		return logString;
-		} catch (Exception e) {
-            e.printStackTrace();
-        }
-        return "";
+	private String readLogAndDelete(int pid) throws Exception {
+		Path filePath = FileSystems.getDefault().getPath("log_peer_" + pid + ".log");
+    	if (!Files.exists(filePath))
+		{
+			filePath = Files.createFile(filePath);
+		}
+    	Scanner in = new Scanner(filePath);
+		String logString = in.nextLine();
+		Files.delete(filePath);
+		return logString;
 	}
     @Test
     public void writeToLogs() {
