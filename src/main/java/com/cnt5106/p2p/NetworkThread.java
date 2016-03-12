@@ -8,8 +8,8 @@ import java.io.*;
 import java.lang.*;
 
 public abstract class NetworkThread extends Thread {
-	private int port;
-	private String hostname;
+	protected int port;
+	protected String hostname;
 	NetworkThread(int port, String hostname) {
 		this.port = port;
 		this.hostname = hostname;
@@ -26,5 +26,6 @@ public abstract class NetworkThread extends Thread {
 	public void setHostname(String hostname) {
 		this.hostname = hostname;
 	}
+	public abstract String toString();
 	public abstract void run();
 }

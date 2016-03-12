@@ -10,7 +10,9 @@ import java.lang.*;
 public class Receiver extends NetworkThread {
 	Receiver(int port, String hostname) {
 		super(port, hostname);
-		
+	}
+	public String toString() {
+		return "The port is " + port + " and the hostname is " + hostname;
 	}
 	public void run() {}
 }
