@@ -6,14 +6,32 @@ package com.cnt5106.p2p.models;
  * A model class for containing information about peers
  */
 
-public class Peer {
+public class peerProcess {
 
+    //PeerInfo data
     private int pID;
     private String hostName;
     private int lPort;
     private Boolean hasFile;
+    
+    //Common data
+    private int preferredNeighbors;
+    private int unchokingInterval;
+    private int optimisticUnchokingInterval;
+    private String fileName;
+    private int fileSize;
+    private int pieceSize;
 
-    public Peer(int pID, String hostName, int lPort, Boolean hasFile)
+    //bit field
+    //thread manager
+
+    public static void main(String[] args) {
+        // Read PeerInfo.cfg to match arg[0] to pID and store hostname, lport, hasfile
+        // Create two thread arrays to connect with other peers
+        // Connect to previously made connections
+    }
+
+    public peerProcess(int pID, String hostName, int lPort, Boolean hasFile)
     {
         this.pID = pID;
         this.hostName = hostName;
