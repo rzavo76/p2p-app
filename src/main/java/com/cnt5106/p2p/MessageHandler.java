@@ -15,23 +15,23 @@ public class MessageHandler {
 		return instance;
 	}
 	public byte[] makeHandshake(int pID) {
-		ByteBuffer data = ByteBuffer.allocate(18);
+		ByteBuffer data = ByteBuffer.allocate(32);
 		data.put("P2PFILESHARINGPROJ".getBytes());
-		data.allocate(10).putInt(0);
-		data.allocate(4).putInt(pID);
-		return data.array();
-	}
-	private byte[] makeBytes(int type) {
-		ByteBuffer data = ByteBuffer.allocate(4);
 		data.putInt(0);
-		data.allocate(1).putInt(type);
+		data.putInt(28, pID);
 		return data.array();
 	}
-	private byte[] makeBytes(int type, byte[] payload) {
-		ByteBuffer data = ByteBuffer.allocate(4);
+	private byte[] makeBytes(byte type) {
+		ByteBuffer data = ByteBuffer.allocate(5);
+		data.putInt(0);
+		data.put(type);
+		return data.array();
+	}
+	private byte[] makeBytes(byte type, byte[] payload) {
+		ByteBuffer data = ByteBuffer.allocate(payload.length + 5);
 		data.putInt(payload.length);
-		data.allocate(1).putInt(type);
-		data.allocate(payload.length).put(payload);
+		data.put(type);
+		data.put(payload);
 		return data.array();
 	}
 	public byte[] makeMessage(MessageType type) throws Exception {

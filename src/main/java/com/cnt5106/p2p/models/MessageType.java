@@ -4,20 +4,20 @@ package com.cnt5106.p2p.models;
 
 public enum MessageType {
 	//associate types with values
-	CHOKE (0),
-	UNCHOKE (1),
-	INTERESTED (2),
-	NOTINTERESTED (3),
-	HAVE (4),
-	BITFIELD (5),
-	REQUEST (6),
-	PIECE (7);
-	private final int value;
-	private MessageType(int value) {
+	CHOKE ((byte)0),
+	UNCHOKE ((byte)1),
+	INTERESTED ((byte)2),
+	NOTINTERESTED ((byte)3),
+	HAVE ((byte)4),
+	BITFIELD ((byte)5),
+	REQUEST ((byte)6),
+	PIECE ((byte)7);
+	private final byte value;
+	private MessageType(byte value) {
 		this.value = value;
 	}
 	//able to retrieve the type value without altering it
-	public int getValue() {
+	public byte getValue() {
 		return value;
 	}
 }
