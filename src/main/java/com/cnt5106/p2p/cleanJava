@@ -1,5 +1,7 @@
 rm StartRemotePeers.class 
-rm RemotePeerInfo.class
-rm models/peerProcess.class 
+rm models/RemotePeerInfo.class
+rm peerProcess.class 
 rm FileParser.class
 rm BTLogger.class
+rm MessageHandler.class
+rm models/MessageTypes.class

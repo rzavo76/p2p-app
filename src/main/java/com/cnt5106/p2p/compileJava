@@ -1,3 +1,4 @@
-javac StartRemotePeers.java RemotePeerInfo.java
-javac models/peerProcess.java FileParser.java
+javac StartRemotePeers.java models/RemotePeerInfo.java
+javac peerProcess.java FileParser.java models/RemotePeerInfo.java
 javac BTLogger.java
+javac MessageHandler.java models/MessageType.java

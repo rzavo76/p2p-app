@@ -25,7 +25,7 @@ public class BTLogger {
     }
     public synchronized void  writeToLog(int pid, String logString) throws IOException {
     	//synchronized file write function
-		Path log = FileSystems.getDefault().getPath("log_peer_" + Integer.toString(pid) + ".log");
+		Path log = FileSystems.getDefault().getPath("log_peer_" + pid + ".log");
 		if (!Files.exists(log))
 		{
 			Files.createFile(log);
