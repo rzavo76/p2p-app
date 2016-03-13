@@ -1,0 +1,6 @@
+javac RemotePeerInfo.java
+javac FileParser.java
+javac BTLogger.java
+javac MessageHandler.java
+javac models/Peer.java
+javac StartRemotePeers.java
