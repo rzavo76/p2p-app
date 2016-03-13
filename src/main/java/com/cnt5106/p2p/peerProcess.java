@@ -1,4 +1,4 @@
-package com.cnt5106.p2p.models;
+package com.cnt5106.p2p;
 
 /**
  * Created by Dylan Richardson on 3/10/2016.
@@ -9,10 +9,13 @@ package com.cnt5106.p2p.models;
 
 import com.cnt5106.p2p.FileParser;
 import com.cnt5106.p2p.ThreadManager;
+import com.cnt5106.p2p.models.RemotePeerInfo;
 
 import java.rmi.Remote;
 import java.util.*;
 import java.lang.*;
+import java.nio.file.FileSystems;
+import java.nio.file.Path;
 
 public class peerProcess {
 
@@ -36,7 +39,9 @@ public class peerProcess {
     // Thread manager
 
     public static void main(String[] args) {
-        // Read PeerInfo.cfg to match arg[0] to pID and store hostname, lport, hasfile
+        FileParser fp = FileParser.getInstance();
+        
+        // Read PeerInfo.cfg to match arg[0] to pID and hostname, lport, hasfile
         // Create two thread arrays to connect with other peers
         // Connect to previously made connections
         int pID = Integer.valueOf(args[0]);
@@ -55,16 +60,16 @@ public class peerProcess {
     }
 
     public peerProcess(int pID, String hostName, int lPort, 
-        Boolean hasFile)
+        Boolean hasFile) throws Exception
     {
+        // FileParser instance will always have these values by this point in the program
         this.pID = pID;
         this.hostName = hostName;
         this.lPort = lPort;
         this.hasFile = hasFile;
 
         FileParser fp = FileParser.getInstance();
-
-        // FileParser instance will always have these values by this point in the program
+        fp.parseConfigFile(FileSystems.getDefault().getPath("Common.cfg"));
         this.preferredNeighbors = fp.getNumPreferredNeighbors();
         this.unchokingInterval = fp.getUnchokeInterval();
         this.optUnchokingInterval = fp.getOptUnchokeInterval();
@@ -72,10 +77,10 @@ public class peerProcess {
         this.fileSize = fp.getFileSize();
         this.pieceSize = fp.getPieceSize();
         
-        // pieces = new boolean[(int)Math.ceil((double)fileSize/pieceSize)];
-        // if(hasFile) {
-        //     Arrays.fill(pieces, hasFile);
-        // }
+        pieces = new boolean[(int)Math.ceil((double)fileSize/pieceSize)];
+        if(hasFile) {
+            Arrays.fill(pieces, hasFile);
+        }
     }
 
     public void setPID(int pID)

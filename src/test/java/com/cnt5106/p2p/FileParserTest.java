@@ -1,6 +1,6 @@
 package com.cnt5106.p2p;
 
-import com.cnt5106.p2p.models.Peer;
+import com.cnt5106.p2p.models.RemotePeerInfo;
 import org.junit.Test;
 import org.junit.Assert;
 
@@ -36,25 +36,25 @@ public class FileParserTest
     @Test
     public void parsesPeerFile()
     {
-        ArrayList<Peer> targetPeers = new ArrayList<>();
-        targetPeers.add(new Peer(1001, "lin114-00.cise.ufl.edu", 6008, true));
-        targetPeers.add(new Peer(1002, "lin114-01.cise.ufl.edu", 6008, false));
-        targetPeers.add(new Peer(1003, "lin114-02.cise.ufl.edu", 6008, false));
-        targetPeers.add(new Peer(1004, "lin114-03.cise.ufl.edu", 6008, false));
-        targetPeers.add(new Peer(1005, "lin114-04.cise.ufl.edu", 6008, false));
-        targetPeers.add(new Peer(1006, "lin114-05.cise.ufl.edu", 6008, false));
+        ArrayList<RemotePeerInfo> targetPeers = new ArrayList<>();
+        targetPeers.add(new RemotePeerInfo(1001, "lin114-00.cise.ufl.edu", 6008, true));
+        targetPeers.add(new RemotePeerInfo(1002, "lin114-01.cise.ufl.edu", 6008, false));
+        targetPeers.add(new RemotePeerInfo(1003, "lin114-02.cise.ufl.edu", 6008, false));
+        targetPeers.add(new RemotePeerInfo(1004, "lin114-03.cise.ufl.edu", 6008, false));
+        targetPeers.add(new RemotePeerInfo(1005, "lin114-04.cise.ufl.edu", 6008, false));
+        targetPeers.add(new RemotePeerInfo(1006, "lin114-05.cise.ufl.edu", 6008, false));
         try
         {
             Path path = FileSystems.getDefault().getPath("PeerInfo.cfg");
-            ArrayList<Peer> peers = fileParser.getPeersFromFile(path);
-            for (Peer p : peers)
+            ArrayList<RemotePeerInfo> peers = fileParser.getPeersFromFile(path);
+            for (RemotePeerInfo p : peers)
             {
                 // Remove comparing peer from the front of the array list
-                Peer pComp = targetPeers.remove(0);
-                Assert.assertEquals(pComp.getPID(), p.getPID());
-                Assert.assertEquals(pComp.getHostName(), p.getHostName());
-                Assert.assertEquals(pComp.getLPort(), p.getLPort());
-                Assert.assertEquals(pComp.getHasFile(), p.getHasFile());
+                RemotePeerInfo pComp = targetPeers.remove(0);
+                Assert.assertEquals(pComp.peerId, p.peerId);
+                Assert.assertEquals(pComp.peerAddress, p.peerAddress);
+                Assert.assertEquals(pComp.peerPort, p.peerPort);
+                Assert.assertEquals(pComp.hasFile, p.hasFile);
             }
         }
         catch (Exception e)

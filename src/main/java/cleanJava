@@ -1,0 +1,2 @@
+rm com/cnt5106/p2p/*.class
+rm com/cnt5106/p2p/models/*.class

@@ -21,7 +21,7 @@ public class RemotePeerInfo {
 		peerPort = pPort;
 		hasFile = false;
 	}
-
+	
 	public RemotePeerInfo(int pid, String pAddress, int pPort, boolean hasFile)
 	{
 		peerId = pid;

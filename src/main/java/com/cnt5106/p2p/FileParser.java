@@ -3,7 +3,6 @@ package com.cnt5106.p2p;
  * ConfigParser class created by Dylan Richardson on Feb. 9, 2016
  */
 import com.cnt5106.p2p.models.RemotePeerInfo;
-import com.cnt5106.p2p.models.peerProcess;
 
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
@@ -93,7 +92,7 @@ public class FileParser
 
 	public ArrayList<RemotePeerInfo> getPeersFromFile(Path fPath) throws Exception
 	{
-		ArrayList<RemotePeerInfo> peers = new ArrayList<>();
+		ArrayList<RemotePeerInfo> peers = new ArrayList<RemotePeerInfo>();
 		try
 		{
 			Scanner in = new Scanner(fPath);
