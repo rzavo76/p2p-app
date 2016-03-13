@@ -28,6 +28,7 @@ public class peerProcess {
 
     // File piece bit field
     boolean[] pieces;
+
     // Thread manager
 
     public static void main(String[] args) {
@@ -53,7 +54,7 @@ public class peerProcess {
         this.fileSize = fileSize;
         this.pieceSize = pieceSize;
         
-        pieces = new boolean[Math.ceil((double)fileSize/pieceSize)];
+        pieces = new boolean[(int)Math.ceil((double)fileSize/pieceSize)];
         if(hasFile) {
             Arrays.fill(pieces, hasFile);
         }
