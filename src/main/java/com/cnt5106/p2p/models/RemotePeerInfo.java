@@ -10,11 +10,11 @@
 package com.cnt5106.p2p.models;
 
 public class RemotePeerInfo {
-	public String peerId;
+	public int peerId;
 	public String peerAddress;
 	public String peerPort;
 	
-	public RemotePeerInfo(String pId, String pAddress, String pPort) {
+	public RemotePeerInfo(int pId, String pAddress, String pPort) {
 		peerId = pId;
 		peerAddress = pAddress;
 		peerPort = pPort;
