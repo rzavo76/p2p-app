@@ -2,6 +2,7 @@ package com.cnt5106.p2p;
 /*
  * ConfigParser class created by Dylan Richardson on Feb. 9, 2016
  */
+import com.cnt5106.p2p.models.RemotePeerInfo;
 import com.cnt5106.p2p.models.peerProcess;
 
 import java.nio.file.FileSystems;
@@ -90,9 +91,9 @@ public class FileParser
 		}
 	}
 
-	public ArrayList<peerProcess> getPeersFromFile(Path fPath) throws Exception
+	public ArrayList<RemotePeerInfo> getPeersFromFile(Path fPath) throws Exception
 	{
-		ArrayList<peerProcess> peers = new ArrayList<>();
+		ArrayList<RemotePeerInfo> peers = new ArrayList<>();
 		try
 		{
 			Scanner in = new Scanner(fPath);
@@ -108,8 +109,8 @@ public class FileParser
 				int listenPort = in.nextInt();
 				Boolean hasFile = in.nextInt() != 0;
 
-				peerProcess p = new peerProcess(peerID, hostName, listenPort, hasFile);
-				peers.add(p);
+				RemotePeerInfo rpi = new RemotePeerInfo(peerID, hostName, listenPort, hasFile);
+				peers.add(rpi);
 			}
 		}
 		catch (Exception e)

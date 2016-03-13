@@ -2,17 +2,18 @@ package com.cnt5106.p2p;
 
 // NetworkThread class created by Ryan Zavoral Feb. 16, 2016.
 
-import java.text.*;
-import java.util.*;
-import java.io.*;
 import java.lang.*;
 
 public abstract class NetworkThread extends Thread {
 	protected int port;
 	protected String hostname;
-	NetworkThread(int port, String hostname) {
+	protected int peerID;
+	protected int targetPeerID;
+	NetworkThread(int port, String hostname, int peerID, int targetPeerID) {
 		this.port = port;
 		this.hostname = hostname;
+		this.peerID = peerID;
+		this.targetPeerID = targetPeerID;
 	}
 	public int getPort() {
 		return port;

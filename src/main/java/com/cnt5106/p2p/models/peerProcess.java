@@ -7,6 +7,10 @@ package com.cnt5106.p2p.models;
  */
 
 
+import com.cnt5106.p2p.FileParser;
+import com.cnt5106.p2p.ThreadManager;
+
+import java.rmi.Remote;
 import java.util.*;
 import java.lang.*;
 
@@ -35,6 +39,19 @@ public class peerProcess {
         // Read PeerInfo.cfg to match arg[0] to pID and store hostname, lport, hasfile
         // Create two thread arrays to connect with other peers
         // Connect to previously made connections
+        int pID = Integer.valueOf(args[0]);
+        try {
+            ThreadManager.getInstance().createThreads(pID);
+            RemotePeerInfo myPeerInfo = ThreadManager.getInstance().getMyPeerInfo();
+            peerProcess myPeerProcess = new peerProcess(myPeerInfo.peerId,
+                                                        myPeerInfo.peerAddress,
+                                                        myPeerInfo.peerPort,
+                                                        myPeerInfo.hasFile);
+        }
+        catch(Exception e)
+        {
+            e.printStackTrace();
+        }
     }
 
     public peerProcess(int pID, String hostName, int lPort, 
@@ -45,12 +62,15 @@ public class peerProcess {
         this.lPort = lPort;
         this.hasFile = hasFile;
 
-        // this.preferredNeighbors = preferredNeighbors;
-        // this.unchokingInterval = unchokingInterval;
-        // this.optUnchokingInterval = optUnchokingInterval;
-        // this.fileName = fileName;
-        // this.fileSize = fileSize;
-        // this.pieceSize = pieceSize;
+        FileParser fp = FileParser.getInstance();
+
+        // FileParser instance will always have these values by this point in the program
+        this.preferredNeighbors = fp.getNumPreferredNeighbors();
+        this.unchokingInterval = fp.getUnchokeInterval();
+        this.optUnchokingInterval = fp.getOptUnchokeInterval();
+        this.fileName = fp.getFileName();
+        this.fileSize = fp.getFileSize();
+        this.pieceSize = fp.getPieceSize();
         
         // pieces = new boolean[(int)Math.ceil((double)fileSize/pieceSize)];
         // if(hasFile) {

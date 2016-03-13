@@ -10,13 +10,23 @@
 package com.cnt5106.p2p.models;
 
 public class RemotePeerInfo {
-	public String peerId;
+	public int peerId;
 	public String peerAddress;
-	public String peerPort;
+	public int peerPort;
+	public boolean hasFile;
 	
-	public RemotePeerInfo(String pId, String pAddress, String pPort) {
+	public RemotePeerInfo(int pId, String pAddress, int pPort) {
 		peerId = pId;
 		peerAddress = pAddress;
 		peerPort = pPort;
+		hasFile = false;
+	}
+
+	public RemotePeerInfo(int pid, String pAddress, int pPort, boolean hasFile)
+	{
+		peerId = pid;
+		peerAddress = pAddress;
+		peerPort = pPort;
+		this.hasFile = hasFile;
 	}
 }

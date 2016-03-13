@@ -16,7 +16,7 @@ public class FileParserTest
     {
         try
         {
-            Path p = FileSystems.getDefault().getPath("src", "test", "java", "com", "cnt5106", "p2p", "Common.cfg");
+            Path p = FileSystems.getDefault().getPath("Common.cfg");
             fileParser.parseConfigFile(p);
             Assert.assertEquals(2, fileParser.getNumPreferredNeighbors());
             Assert.assertEquals(5, fileParser.getUnchokeInterval());
@@ -45,7 +45,7 @@ public class FileParserTest
         targetPeers.add(new Peer(1006, "lin114-05.cise.ufl.edu", 6008, false));
         try
         {
-            Path path = FileSystems.getDefault().getPath("src", "test", "java", "com", "cnt5106", "p2p", "PeerInfo.cfg");
+            Path path = FileSystems.getDefault().getPath("PeerInfo.cfg");
             ArrayList<Peer> peers = fileParser.getPeersFromFile(path);
             for (Peer p : peers)
             {
