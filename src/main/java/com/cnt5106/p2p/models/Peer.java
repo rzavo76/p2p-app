@@ -5,6 +5,7 @@ package com.cnt5106.p2p.models;
  *
  * A model class for containing information about peers
  */
+
 public class Peer {
 
     private int pID;

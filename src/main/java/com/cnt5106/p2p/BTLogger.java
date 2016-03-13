@@ -1,6 +1,8 @@
 package com.cnt5106.p2p;
 
 // BTLogger class created by Ryan Zavoral Feb. 5, 2016.
+// singleton logging class that a peer shares among its threads
+// writes to a log file with the desired message
 
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
@@ -11,19 +13,18 @@ import java.io.*;
 import java.lang.*;
 
 public class BTLogger { 
-// simpleton logging class that a peer shares among its threads
-// writes to a file with the desired message
     private static SimpleDateFormat sdf;
     private static BTLogger instance = null;
     private BTLogger() {}
     public static synchronized BTLogger getInstance() {
     	if(instance == null) {
     		instance = new BTLogger();
-    		sdf = new SimpleDateFormat("HH:mm:ss"); // format hour, minute, second
+    		sdf = new SimpleDateFormat("HH:mm:ss"); // format time
     	}
     	return instance;
     }
     public synchronized void  writeToLog(int pid, String logString) throws IOException {
+    	//synchronized file write function
 		Path log = FileSystems.getDefault().getPath("log_peer_" + Integer.toString(pid) + ".log");
 		if (!Files.exists(log))
 		{

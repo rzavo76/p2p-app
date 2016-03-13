@@ -1,9 +1,10 @@
 package com.cnt5106.p2p.models;
 
 // MessageType enum created by Ryan Zavoral Mar. 12, 2016.
+// Model for associate types with values
 
 public enum MessageType {
-	//associate types with values
+	//link values with types
 	CHOKE ((byte)0),
 	UNCHOKE ((byte)1),
 	INTERESTED ((byte)2),
@@ -16,7 +17,7 @@ public enum MessageType {
 	private MessageType(byte value) {
 		this.value = value;
 	}
-	//able to retrieve the type value without altering it
+	//only retrieve the type value without altering it
 	public byte getValue() {
 		return value;
 	}
