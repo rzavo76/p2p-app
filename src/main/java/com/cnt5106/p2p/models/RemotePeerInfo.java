@@ -7,7 +7,7 @@
  * It is your responsibility to adapt this program to your running environment.
  */
 
-package com.cnt5106.p2p;
+package com.cnt5106.p2p.models;
 
 public class RemotePeerInfo {
 	public String peerId;
