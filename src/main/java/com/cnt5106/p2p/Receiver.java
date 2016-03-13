@@ -8,11 +8,13 @@ import java.io.*;
 import java.lang.*;
 
 public class Receiver extends NetworkThread {
-	Receiver(int port, String hostname) {
-		super(port, hostname);
+	Receiver(int port, String hostname, int peerID, int targetPeerID) {
+		super(port, hostname, peerID, targetPeerID);
 	}
 	public String toString() {
 		return "The port is " + port + " and the hostname is " + hostname;
 	}
-	public void run() {}
+	public void run() {
+		System.out.println("");
+	}
 }

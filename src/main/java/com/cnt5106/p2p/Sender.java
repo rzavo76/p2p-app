@@ -10,8 +10,8 @@ import java.lang.*;
 public class Sender extends NetworkThread {
 	private int targetPort;
 	private String targetHostname;
-	Sender(int port, String hostname, int targetPort, String targetHostname) {
-		super(port, hostname);
+	Sender(int port, String hostname, int targetPort, String targetHostname, int peerID, int targetPeerID) {
+		super(port, hostname, peerID, targetPeerID);
 		this.targetPort = targetPort;
 		this.targetHostname = targetHostname;
 	}
@@ -31,5 +31,7 @@ public class Sender extends NetworkThread {
 		return "The port is " + port + " and the hostname is " + hostname + "." + 
 		"The target port is " + targetPort + " and the target hostname is " + targetHostname + "."; 
 	}
-	public void run() {}
+	public void run() {
+		System.out.println("Sender thread for peer " + targetPeerID + " has been spun");
+	}
 }
