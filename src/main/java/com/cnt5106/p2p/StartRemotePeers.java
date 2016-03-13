@@ -11,7 +11,7 @@ package com.cnt5106.p2p;
 
 import java.io.*;
 import java.util.*;
-
+import com.cnt5106.p2p.models.RemotePeerInfo;
 /*
  * The StartRemotePeers class begins remote peer processes. 
  * It reads configuration file PeerInfo.cfg and starts remote peer processes.
@@ -28,7 +28,7 @@ public class StartRemotePeers {
 			BufferedReader in = new BufferedReader(new FileReader("PeerInfo.cfg"));
 			while((st = in.readLine()) != null) {
 				 String[] tokens = st.split("\\s+");
-			     peerInfoVector.addElement(new RemotePeerInfo(tokens[0], tokens[1], tokens[2]));
+			     peerInfoVector.addElement(new RemotePeerInfo(Integer.parseInt(tokens[0]), tokens[1], Integer.parseInt(tokens[2])));
 			}
 			in.close();
 		}

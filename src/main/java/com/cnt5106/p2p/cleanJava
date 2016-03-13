@@ -4,4 +4,4 @@ rm peerProcess.class
 rm FileParser.class
 rm BTLogger.class
 rm MessageHandler.class
-rm models/MessageTypes.class
+rm models/MessageType.class
