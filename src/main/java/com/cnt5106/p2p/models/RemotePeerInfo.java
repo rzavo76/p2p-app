@@ -13,10 +13,18 @@ public class RemotePeerInfo {
 	public int peerId;
 	public String peerAddress;
 	public int peerPort;
+	public boolean hasFile;
 	
 	public RemotePeerInfo(int pId, String pAddress, int pPort) {
 		peerId = pId;
 		peerAddress = pAddress;
 		peerPort = pPort;
+		hasFile = false;
+	}
+	public RemotePeerInfo(int pId, String pAddress, int pPort, boolean hasFile) {
+		peerId = pId;
+		peerAddress = pAddress;
+		peerPort = pPort;
+		this.hasFile = hasFile;
 	}
 }
