@@ -1,0 +1,4 @@
+javac com/cnt5106/p2p/StartRemotePeers.java com/cnt5106/p2p/models/RemotePeerInfo.java
+javac com/cnt5106/p2p/peerProcess.java com/cnt5106/p2p/FileParser.java
+javac com/cnt5106/p2p/BTLogger.java
+javac com/cnt5106/p2p/MessageHandler.java com/cnt5106/p2p/models/MessageType.java
