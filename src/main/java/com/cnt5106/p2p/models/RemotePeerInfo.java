@@ -12,9 +12,9 @@ package com.cnt5106.p2p.models;
 public class RemotePeerInfo {
 	public int peerId;
 	public String peerAddress;
-	public String peerPort;
+	public int peerPort;
 	
-	public RemotePeerInfo(int pId, String pAddress, String pPort) {
+	public RemotePeerInfo(int pId, String pAddress, int pPort) {
 		peerId = pId;
 		peerAddress = pAddress;
 		peerPort = pPort;
