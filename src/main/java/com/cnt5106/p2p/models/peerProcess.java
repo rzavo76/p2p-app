@@ -38,26 +38,24 @@ public class peerProcess {
     }
 
     public peerProcess(int pID, String hostName, int lPort, 
-        Boolean hasFile, int preferredNeighbors, 
-        int unchokingInterval, int optUnchokingInterval, 
-        String fileName, int fileSize, int pieceSize)
+        Boolean hasFile)
     {
         this.pID = pID;
         this.hostName = hostName;
         this.lPort = lPort;
         this.hasFile = hasFile;
 
-        this.preferredNeighbors = preferredNeighbors;
-        this.unchokingInterval = unchokingInterval;
-        this.optUnchokingInterval = optUnchokingInterval;
-        this.fileName = fileName;
-        this.fileSize = fileSize;
-        this.pieceSize = pieceSize;
+        // this.preferredNeighbors = preferredNeighbors;
+        // this.unchokingInterval = unchokingInterval;
+        // this.optUnchokingInterval = optUnchokingInterval;
+        // this.fileName = fileName;
+        // this.fileSize = fileSize;
+        // this.pieceSize = pieceSize;
         
-        pieces = new boolean[(int)Math.ceil((double)fileSize/pieceSize)];
-        if(hasFile) {
-            Arrays.fill(pieces, hasFile);
-        }
+        // pieces = new boolean[(int)Math.ceil((double)fileSize/pieceSize)];
+        // if(hasFile) {
+        //     Arrays.fill(pieces, hasFile);
+        // }
     }
 
     public void setPID(int pID)
