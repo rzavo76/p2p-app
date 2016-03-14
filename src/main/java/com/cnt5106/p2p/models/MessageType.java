@@ -13,12 +13,15 @@ public enum MessageType {
 	BITFIELD ((byte)5),
 	REQUEST ((byte)6),
 	PIECE ((byte)7);
+	
 	private final byte value;
-	private MessageType(byte value) {
+	private MessageType(byte value) 
+	{
 		this.value = value;
 	}
 	//only retrieve the type value without altering it
-	public byte getValue() {
+	public byte getValue() 
+	{
 		return value;
 	}
 }

@@ -20,24 +20,31 @@ import com.cnt5106.p2p.models.RemotePeerInfo;
  */
 public class StartRemotePeers {
 	public Vector<RemotePeerInfo> peerInfoVector;
-	public void getConfiguration() {
+	public void getConfiguration() 
+	{
 		String st;
 		int i1;
 		peerInfoVector = new Vector<RemotePeerInfo>();
-		try {
+		try 
+		{
 			BufferedReader in = new BufferedReader(new FileReader("PeerInfo.cfg"));
-			while((st = in.readLine()) != null) {
+			while((st = in.readLine()) != null) 
+			{
 				 String[] tokens = st.split("\\s+");
-			     peerInfoVector.addElement(new RemotePeerInfo(Integer.parseInt(tokens[0]), tokens[1], Integer.parseInt(tokens[2])));
+			     peerInfoVector.addElement(new RemotePeerInfo(Integer.parseInt(tokens[0]), 
+			     	tokens[1], Integer.parseInt(tokens[2])));
 			}
 			in.close();
 		}
-		catch (Exception ex) {
+		catch (Exception ex) 
+		{
 			System.out.println(ex.toString());
 		}
 	}
-	public static void main(String[] args) {
-		try {
+	public static void main(String[] args) 
+	{
+		try 
+		{
 			StartRemotePeers myStart = new StartRemotePeers();
 			myStart.getConfiguration();
 			// get current path
@@ -46,11 +53,13 @@ public class StartRemotePeers {
 			for (int i = 0; i < myStart.peerInfoVector.size(); i++) {
 				RemotePeerInfo pInfo = (RemotePeerInfo) myStart.peerInfoVector.elementAt(i);
 				System.out.println("Start remote peer " + pInfo.peerId +  " at " + pInfo.peerAddress );
-				Runtime.getRuntime().exec("ssh " + pInfo.peerAddress + " cd " + path + "; java peerProcess " + pInfo.peerId);
+				Runtime.getRuntime().exec("ssh " + pInfo.peerAddress + " cd " + path 
+					+ "; java peerProcess " + pInfo.peerId);
 			}		
 			System.out.println("Starting all remote peers has done." );
 		}
-		catch (Exception ex) {
+		catch (Exception ex) 
+		{
 			System.out.println(ex);
 		}
 	}

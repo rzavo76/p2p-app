@@ -45,7 +45,8 @@ public class peerProcess {
         // Create two thread arrays to connect with other peers
         // Connect to previously made connections
         int pID = Integer.valueOf(args[0]);
-        try {
+        try 
+        {
             ThreadManager.getInstance().createThreads(pID);
             RemotePeerInfo myPeerInfo = ThreadManager.getInstance().getMyPeerInfo();
             peerProcess myPeerProcess = new peerProcess(myPeerInfo.peerId,
@@ -63,11 +64,13 @@ public class peerProcess {
         Boolean hasFile) throws Exception
     {
         // FileParser instance will always have these values by this point in the program
+        // Assign peer info config variables
         this.pID = pID;
         this.hostName = hostName;
         this.lPort = lPort;
         this.hasFile = hasFile;
 
+        //Assign common config variables
         FileParser fp = FileParser.getInstance();
         fp.parseConfigFile(FileSystems.getDefault().getPath("Common.cfg"));
         this.preferredNeighbors = fp.getNumPreferredNeighbors();
@@ -77,8 +80,10 @@ public class peerProcess {
         this.fileSize = fp.getFileSize();
         this.pieceSize = fp.getPieceSize();
         
+        //calculate number of pieces and initialize piece array
         pieces = new boolean[(int)Math.ceil((double)fileSize/pieceSize)];
-        if(hasFile) {
+        if(hasFile) 
+        {
             Arrays.fill(pieces, hasFile);
         }
     }
