@@ -3,9 +3,6 @@ package com.cnt5106.p2p;
 // Receiver class created by Ryan Zavoral Feb. 16, 2016.
 // N Receiving threads are actively run by the thread manager to wait on a socket
 
-import java.text.*;
-import java.util.*;
-import java.io.*;
 import java.lang.*;
 
 public class Receiver extends NetworkThread {

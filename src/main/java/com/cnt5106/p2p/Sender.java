@@ -3,9 +3,6 @@ package com.cnt5106.p2p;
 // Sender class created by Ryan Zavoral Feb. 16, 2016.
 // K + 1 sending threads are run by the thread manager for a socket
 
-import java.text.*;
-import java.util.*;
-import java.io.*;
 import java.lang.*;
 
 public class Sender extends NetworkThread {

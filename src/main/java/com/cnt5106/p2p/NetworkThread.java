@@ -3,9 +3,6 @@ package com.cnt5106.p2p;
 // NetworkThread class created by Ryan Zavoral Feb. 16, 2016.
 // Abstract thread class for Receiver and Sender
 
-import java.text.*;
-import java.util.*;
-import java.io.*;
 import java.lang.*;
 
 public abstract class NetworkThread extends Thread {
