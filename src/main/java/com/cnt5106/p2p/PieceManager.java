@@ -9,12 +9,12 @@ package com.cnt5106.p2p;
 
 public class PieceManager {
     private static PieceManager instance = null;
-    private static int pieces = 0;
+    private static int numberOfPieces = 0;
 
     private PieceManager() {}
     public static synchronized PieceManager getInstance() throws Exception
     {
-        if(pieces == 0) // set pieces before you can getInstance
+        if(numberOfPieces == 0) // set pieces before you can getInstance
         {
             throw new Exception("Cannot get PieceManager until pieces are set.");
         }
@@ -24,13 +24,13 @@ public class PieceManager {
         }
         return instance;
     }
-    public static void setPieces(int p)
+    public static void setNumberOfPieces(int p)
     {
         // pieces can only be set once
-        pieces = pieces == 0 ? p : pieces;
+        numberOfPieces = numberOfPieces == 0 ? p : numberOfPieces;
     }
-    public static int getPieces()
+    public static int getNumberOfPieces()
     {
-        return pieces;
+        return numberOfPieces;
     }
 }
