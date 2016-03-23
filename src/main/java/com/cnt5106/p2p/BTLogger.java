@@ -20,7 +20,8 @@ public class BTLogger
     private BTLogger() {}
     public static synchronized BTLogger getInstance() 
     {
-    	if(instance == null) {
+    	if(instance == null)
+		{
     		instance = new BTLogger();
     		sdf = new SimpleDateFormat("HH:mm:ss"); 
     		// format time

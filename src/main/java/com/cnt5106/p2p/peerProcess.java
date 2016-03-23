@@ -9,6 +9,7 @@ package com.cnt5106.p2p;
 
 import com.cnt5106.p2p.FileParser;
 import com.cnt5106.p2p.ThreadManager;
+import com.cnt5106.p2p.PieceManager;
 import com.cnt5106.p2p.models.RemotePeerInfo;
 
 import java.rmi.Remote;
@@ -81,11 +82,13 @@ public class peerProcess {
         this.pieceSize = fp.getPieceSize();
         
         //calculate number of pieces and initialize piece array
-        pieces = new boolean[(int)Math.ceil((double)fileSize/pieceSize)];
+        int numberOfPieces = (int)Math.ceil((double)fileSize/pieceSize);
+        pieces = new boolean[numberOfPieces];
         if(hasFile) 
         {
             Arrays.fill(pieces, hasFile);
         }
+        PieceManager.setPieces(numberOfPieces);
     }
 
     public void setPID(int pID)
