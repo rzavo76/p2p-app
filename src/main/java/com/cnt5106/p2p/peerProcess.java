@@ -84,9 +84,9 @@ public class peerProcess {
         //calculate number of pieces and initialize piece array
         int numberOfPieces = (int)Math.ceil((double)fileSize/pieceSize);
         pieces = new boolean[numberOfPieces];
-        if(hasFile) 
+        if(this.hasFile)
         {
-            Arrays.fill(pieces, hasFile);
+            Arrays.fill(pieces, true);
         }
         PieceManager.setPieces(numberOfPieces);
     }
