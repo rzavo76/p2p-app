@@ -88,7 +88,7 @@ public class peerProcess {
         {
             Arrays.fill(pieces, true);
         }
-        PieceManager.setNumberOfPieces(numberOfPieces);
+        PieceManager.setInstance(numberOfPieces, this.pID);
     }
 
     public void setPID(int pID)
