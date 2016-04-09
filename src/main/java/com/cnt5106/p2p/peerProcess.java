@@ -82,13 +82,13 @@ public class peerProcess {
         this.pieceSize = fp.getPieceSize();
         
         //calculate number of pieces and initialize piece array
-        int numberOfPieces = (int)Math.ceil((double)fileSize/pieceSize);
+        int numberOfPieces = (int)Math.ceil((double)this.fileSize/this.pieceSize);
         pieces = new boolean[numberOfPieces];
         if(this.hasFile)
         {
             Arrays.fill(pieces, true);
         }
-        PieceManager.setInstance(numberOfPieces, this.pID);
+        PieceManager.setInstance(numberOfPieces, this.fileSize, this.pieceSize, this.pID, this.fileName);
     }
 
     public void setPID(int pID)
