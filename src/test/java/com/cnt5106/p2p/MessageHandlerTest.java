@@ -42,7 +42,7 @@ public class MessageHandlerTest {
 		bb.put(message);
 		int length = bb.getInt(0);
 		System.out.print("length: " + length);
-		Assert.assertEquals(length, 0);
+		Assert.assertEquals(length, 1);
 
 		byte type = bb.get(4);
 		System.out.println(" type: " + type);
@@ -59,9 +59,9 @@ public class MessageHandlerTest {
 			byte[] message = mh.makeMessage(MessageType.HAVE, data);
 		ByteBuffer bb = ByteBuffer.allocate(7);
 		bb.put(message);
-		int length = bb.getInt(0);
+		int length = java.nio.ByteBuffer.wrap(message).getInt(0);
 		System.out.print("length: " + length);
-		Assert.assertEquals(length, 2);
+		Assert.assertEquals(length, 3);
 
 		byte type = bb.get(4);
 		System.out.print(" type: " + type);
