@@ -90,6 +90,7 @@ public class ThreadManager {
                 if (peers.get(thisIndex).peerId == myPid)
                 {
                     myPeerInfo = peers.get(thisIndex);
+                    break;
                 }
             }
 
