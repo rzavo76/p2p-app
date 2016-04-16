@@ -6,6 +6,7 @@ package com.cnt5106.p2p;
 import java.io.IOException;
 import java.lang.*;
 import java.net.Socket;
+import java.util.Arrays;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -35,7 +36,7 @@ public class Sender extends Thread {
 		catch (Exception e)
 		{
 			try {
-				BTLogger.getInstance().writeToLog(peerID, e.toString());
+				BTLogger.getInstance().writeToLog(peerID, Arrays.toString(e.getStackTrace()));
 			}
 			catch (IOException ioe) {
 				e.printStackTrace();

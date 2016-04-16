@@ -46,7 +46,7 @@ public class peerProcess {
         }
         catch(Exception e) {
             try {
-                BTLogger.getInstance().writeToLog(pID, e.toString());
+                BTLogger.getInstance().writeToLog(pID, Arrays.toString(e.getStackTrace()));
             }
             catch (IOException ioe) {
                 e.printStackTrace();

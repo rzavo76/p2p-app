@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Queue;
@@ -104,10 +105,25 @@ public class PeerStream extends Thread {
         catch (Exception e)
         {
             try {
-                BTLogger.getInstance().writeToLog(peerID, e.toString());
+                BTLogger.getInstance().writeToLog(peerID, Arrays.toString(e.getStackTrace()));
             }
             catch (IOException ioe) {
                 e.printStackTrace();
+            }
+        }
+        finally {
+            try {
+                if (socket != null && socket.isBound())
+                    socket.close();
+            }
+            catch (Exception e)
+            {
+                try {
+                    BTLogger.getInstance().writeToLog(peerID, Arrays.toString(e.getStackTrace()));
+                }
+                catch (IOException ioe) {
+                    e.printStackTrace();
+                }
             }
         }
     }
@@ -122,7 +138,7 @@ public class PeerStream extends Thread {
         catch (Exception e)
         {
             try {
-                BTLogger.getInstance().writeToLog(peerID, e.toString());
+                BTLogger.getInstance().writeToLog(peerID, Arrays.toString(e.getStackTrace()));
             }
             catch (IOException ioe) {
                 e.printStackTrace();
@@ -139,7 +155,7 @@ public class PeerStream extends Thread {
         catch (Exception e)
         {
             try {
-                BTLogger.getInstance().writeToLog(peerID, e.toString());
+                BTLogger.getInstance().writeToLog(peerID, Arrays.toString(e.getStackTrace()));
             }
             catch (IOException ioe) {
                 e.printStackTrace();
