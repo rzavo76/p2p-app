@@ -63,12 +63,14 @@ public class PeerStream extends Thread {
             if (connector)
             {
                 socket = new Socket(targetHostName, targetPort, null, port);
+                btLogger.writeToLog(this.peerID, btLogger.socketStarted(this.peerID, !connector));
                 sender = new Sender(socket, peerID);
                 sender.start();
             }
             else
             {
                 ServerSocket listener = new ServerSocket(port);
+                btLogger.writeToLog(this.peerID, btLogger.socketStarted(this.peerID, !connector));
                 socket = listener.accept();
                 sender = new Sender(socket, peerID);
                 sender.start();

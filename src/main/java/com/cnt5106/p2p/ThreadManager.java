@@ -14,7 +14,6 @@ import java.util.*;
  */
 public class ThreadManager {
     private PeerStream[] streams;
-    private HashSet<PeerStream> prefNeighbors;
     private ArrayList<RemotePeerInfo> peers;
     private RemotePeerInfo myPeerInfo;
     private peerProcess myPeer;
@@ -136,16 +135,6 @@ public class ThreadManager {
             downloadQueue.add(streams[i]);
         }
         return downloadQueue;
-    }
-
-    public HashSet<PeerStream> getPrefNeighbors()
-    {
-        return prefNeighbors;
-    }
-
-    public void setPrefNeighbors(HashSet<PeerStream> neighborSet)
-    {
-        prefNeighbors = neighborSet;
     }
 
     // Method to be called by a receiver

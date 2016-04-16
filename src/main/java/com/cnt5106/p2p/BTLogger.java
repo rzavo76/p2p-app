@@ -43,6 +43,11 @@ public class BTLogger
     	toLog.flush();
     	toLog.close();
     }
+	public String socketStarted(int pid, boolean isServer)
+	{
+		return String.format("%s: Peer %d makes a server? %b socket",
+				sdf.format(Calendar.getInstance().getTime()), pid, isServer);
+	}
 	public String TCPConnectTo(int p1id, int p2id) 
 	{
 		return String.format("%s: Peer %d makes a connection to Peer %d.\n",
