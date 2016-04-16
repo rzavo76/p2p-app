@@ -52,11 +52,12 @@ public class StartRemotePeers {
 			for (int i = 0; i < myStart.peerInfoVector.size(); i++) {
 				RemotePeerInfo pInfo = myStart.peerInfoVector.elementAt(i);
 				System.out.println("Start remote peer " + pInfo.peerId +  " at " + pInfo.peerAddress );
+				// *********************** IMPORTANT *************************** //
+				// If your program is JAVA, use this line.
+				Runtime.getRuntime().exec("ssh " + pInfo.peerAddress + " cd " + path + "; java peerProcess " + pInfo.peerId);
 
-				String cmd = "Terminal -e cd " + path
-						+ "; mvn exec:java -Dexec.mainClass=\"com.cnt5106.p2p.peerProcess\" -Dexec.args=\"" + pInfo.peerId + "\" &";
-				Runtime rt = Runtime.getRuntime();
-				Process term = rt.exec(cmd);
+				// If your program is C/C++, use this line instead of the above line.
+				//Runtime.getRuntime().exec("ssh " + pInfo.peerAddress + " cd " + path + "; ./peerProcess " + pInfo.peerId);
 			}		
 			System.out.println("Starting all remote peers has done." );
 		}
