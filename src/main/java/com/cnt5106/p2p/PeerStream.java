@@ -103,7 +103,12 @@ public class PeerStream extends Thread {
         }
         catch (Exception e)
         {
-            e.printStackTrace();
+            try {
+                BTLogger.getInstance().writeToLog(peerID, e.toString());
+            }
+            catch (IOException ioe) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -116,7 +121,12 @@ public class PeerStream extends Thread {
         }
         catch (Exception e)
         {
-            e.printStackTrace();
+            try {
+                BTLogger.getInstance().writeToLog(peerID, e.toString());
+            }
+            catch (IOException ioe) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -128,7 +138,12 @@ public class PeerStream extends Thread {
         }
         catch (Exception e)
         {
-            e.printStackTrace();
+            try {
+                BTLogger.getInstance().writeToLog(peerID, e.toString());
+            }
+            catch (IOException ioe) {
+                e.printStackTrace();
+            }
         }
     }
 

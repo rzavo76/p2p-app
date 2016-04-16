@@ -10,6 +10,7 @@ package com.cnt5106.p2p;
 
 import com.cnt5106.p2p.models.RemotePeerInfo;
 
+import java.io.IOException;
 import java.util.*;
 import java.lang.*;
 import java.nio.file.FileSystems;
@@ -43,9 +44,13 @@ public class peerProcess {
         {
             ThreadManager.getInstance().createThreads(pID);
         }
-        catch(Exception e)
-        {
-            e.printStackTrace();
+        catch(Exception e) {
+            try {
+                BTLogger.getInstance().writeToLog(pID, e.toString());
+            }
+            catch (IOException ioe) {
+                e.printStackTrace();
+            }
         }
     }
 

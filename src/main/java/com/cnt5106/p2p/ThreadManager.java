@@ -16,12 +16,10 @@ public class ThreadManager {
     private PeerStream[] streams;
     private ArrayList<RemotePeerInfo> peers;
     private RemotePeerInfo myPeerInfo;
-    private peerProcess myPeer;
     private HashSet<Integer> requestBuffer;
     private Timer prefNeighborsTimer;
     private Timer optUnchokeTimer;
     private Comparator<PeerStream> comparator;
-    private PriorityQueue<PeerStream> downloadQueue;
 
     private int numPrefNeighbors;
     private long unchokeInterval;
@@ -92,7 +90,6 @@ public class ThreadManager {
                     break;
                 }
             }
-
             final int numPeers = peers.size() - 1;
             // Initialize basic arrays of sender and receiver threads of size N;
             // very brute force, but this can be adjusted accordingly later
@@ -114,11 +111,12 @@ public class ThreadManager {
                 streams[i] = new PeerStream(myPeerInfo.peerPort, myPeerInfo.peerId);
                 streams[i].start();
             }
+            // Spin up timer for choosing preferred neighbors
             prefNeighborsTimer = new Timer();
             prefNeighborsTimer.schedule(
                     new PreferredNeighborsTracker(numPrefNeighbors),
                     0,
-                    unchokeInterval);
+                    unchokeInterval * 1000);
         }
         catch (Exception e)
         {
@@ -129,7 +127,8 @@ public class ThreadManager {
     public synchronized PriorityQueue<PeerStream> getDownloadQueue()
     {
         // Add streams to download queue in order of download speed
-        downloadQueue.clear();
+        // TODO: Only send active peers into download queue
+        PriorityQueue<PeerStream> downloadQueue = new PriorityQueue<>(streams.length, comparator);
         for (int i = 0; i != streams.length; ++i)
         {
             downloadQueue.add(streams[i]);

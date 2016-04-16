@@ -3,6 +3,7 @@ package com.cnt5106.p2p;
 // Receiver class created by Ryan Zavoral Feb. 16, 2016.
 // N Receiving threads are actively run by the thread manager to wait on a socket
 
+import java.io.IOException;
 import java.lang.*;
 import java.net.Socket;
 import java.util.concurrent.BlockingQueue;
@@ -33,7 +34,12 @@ public class Sender extends Thread {
 		}
 		catch (Exception e)
 		{
-			e.printStackTrace();
+			try {
+				BTLogger.getInstance().writeToLog(peerID, e.toString());
+			}
+			catch (IOException ioe) {
+				e.printStackTrace();
+			}
 		}
 	}
 
