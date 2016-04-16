@@ -47,14 +47,14 @@ public class StartRemotePeers {
 			StartRemotePeers myStart = new StartRemotePeers();
 			myStart.getConfiguration();
 			// get current path
-			String path = System.getProperty("user.dir");
+			String path = "~/p2p-app";
 			// start clients at remote hosts
 			for (int i = 0; i < myStart.peerInfoVector.size(); i++) {
 				RemotePeerInfo pInfo = myStart.peerInfoVector.elementAt(i);
-				System.out.println("Start remote peer " + pInfo.peerId +  " at " + pInfo.peerAddress );
+				System.out.println("Start remote peer " + pInfo.peerId +  " at " + args[0] + pInfo.peerAddress );
 				// *********************** IMPORTANT *************************** //
 				// If your program is JAVA, use this line.
-				Runtime.getRuntime().exec("ssh " + pInfo.peerAddress + " cd " + path + "; java peerProcess " + pInfo.peerId);
+				Runtime.getRuntime().exec("ssh " + args[0] + pInfo.peerAddress + " cd " + path + "; java com.cnt5106.p2p.peerProcess " + pInfo.peerId);
 
 				// If your program is C/C++, use this line instead of the above line.
 				//Runtime.getRuntime().exec("ssh " + pInfo.peerAddress + " cd " + path + "; ./peerProcess " + pInfo.peerId);
