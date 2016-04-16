@@ -35,7 +35,6 @@ public class peerProcess {
     boolean[] pieces;
 
     public static void main(String[] args) {
-        FileParser fp = FileParser.getInstance();
         // Read PeerInfo.cfg to match arg[0] to pID and hostname, lport, hasfile
         // Create two thread arrays to connect with other peers
         // Connect to previously made connections
