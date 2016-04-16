@@ -11,13 +11,20 @@ public abstract class NetworkThread extends Thread {
 	protected String hostname;
 	protected int peerID;
 	protected int targetPeerID;
+	protected int index;
 	
-	NetworkThread(int port, String hostname, int peerID, int targetPeerID) 
+	NetworkThread(int port, String hostname, int peerID, int targetPeerID, int index)
 	{
 		this.port = port;
 		this.hostname = hostname;
 		this.peerID = peerID;
 		this.targetPeerID = targetPeerID;
+		this.index = index;
+	}
+
+	public int getIndex()
+	{
+		return index;
 	}
 	public int getPort() 
 	{

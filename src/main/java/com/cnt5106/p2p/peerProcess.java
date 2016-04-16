@@ -7,16 +7,12 @@ package com.cnt5106.p2p;
  */
 
 
-import com.cnt5106.p2p.FileParser;
-import com.cnt5106.p2p.ThreadManager;
-import com.cnt5106.p2p.PieceManager;
+
 import com.cnt5106.p2p.models.RemotePeerInfo;
 
-import java.rmi.Remote;
 import java.util.*;
 import java.lang.*;
 import java.nio.file.FileSystems;
-import java.nio.file.Path;
 
 public class peerProcess {
 
@@ -37,11 +33,9 @@ public class peerProcess {
     // File piece bit field
     boolean[] pieces;
 
-    // Thread manager
-
     public static void main(String[] args) {
         FileParser fp = FileParser.getInstance();
-        
+        System.out.printf("Peer %s has started%n", args[0]);
         // Read PeerInfo.cfg to match arg[0] to pID and hostname, lport, hasfile
         // Create two thread arrays to connect with other peers
         // Connect to previously made connections
@@ -49,11 +43,6 @@ public class peerProcess {
         try 
         {
             ThreadManager.getInstance().createThreads(pID);
-            RemotePeerInfo myPeerInfo = ThreadManager.getInstance().getMyPeerInfo();
-            peerProcess myPeerProcess = new peerProcess(myPeerInfo.peerId,
-                                                        myPeerInfo.peerAddress,
-                                                        myPeerInfo.peerPort,
-                                                        myPeerInfo.hasFile);
         }
         catch(Exception e)
         {
@@ -78,11 +67,11 @@ public class peerProcess {
         this.unchokingInterval = fp.getUnchokeInterval();
         this.optUnchokingInterval = fp.getOptUnchokeInterval();
         this.fileName = fp.getFileName();
-        this.fileSize = fp.getFileSize();
-        this.pieceSize = fp.getPieceSize();
+        this.fileSize = fp.getFileSize();       // TODO: Do we need these?
+        this.pieceSize = fp.getPieceSize();     // TODO: Do we need these?
         
         //calculate number of pieces and initialize piece array
-        int numberOfPieces = (int)Math.ceil((double)this.fileSize/this.pieceSize);
+        int numberOfPieces = fp.getNumPieces();
         pieces = new boolean[numberOfPieces];
         if(this.hasFile)
         {

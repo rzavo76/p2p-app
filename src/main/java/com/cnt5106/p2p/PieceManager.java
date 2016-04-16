@@ -3,6 +3,9 @@ package com.cnt5106.p2p;
 import java.io.*;
 import java.nio.file.*;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Random;
 
 /**
  * Created by Ryan Zavoral on 3/22/16.
@@ -19,6 +22,7 @@ public class PieceManager {
     private int pieceSize;
     private int pID;
     private String filename;
+
 
     private PieceManager(int numberOfPieces, int fileSize, int pieceSize, int pID, String filename) {
         this.numberOfPieces = numberOfPieces;

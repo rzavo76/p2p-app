@@ -4,8 +4,8 @@ import com.cnt5106.p2p.models.RemotePeerInfo;
 
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
-import java.rmi.Remote;
 import java.util.ArrayList;
+import java.util.HashSet;
 
 /**
  * Created by Dylan Richardson on 3/13/16.
@@ -14,11 +14,11 @@ import java.util.ArrayList;
  * receiver thread.
  */
 public class ThreadManager {
-    private Sender[] senders;
-    private Receiver[] receivers;
-    private Object[] locks;
+    private PeerStream[] streams;
     private ArrayList<RemotePeerInfo> peers;
-    private RemotePeerInfo myPeer;
+    private RemotePeerInfo myPeerInfo;
+    private peerProcess myPeer;
+    private HashSet<Integer> requestBuffer;
 
     private static ThreadManager mThreadMgr;
 
@@ -44,6 +44,8 @@ public class ThreadManager {
      * Description: Spins up all sending and receiving communication threads
      * in this PeerProcess by parsing the config files and peer info files.
      *
+     * @param myPid This threads Peer ID
+     *
      * @throws Exception
      */
     public void createThreads(int myPid) throws Exception
@@ -55,43 +57,73 @@ public class ThreadManager {
             peers = fp.getPeersFromFile(peerInfoFile);
             fp.parseConfigFile(configFile);
 
-            RemotePeerInfo me = null;
-            for (RemotePeerInfo rpi : peers)
+            int thisIndex;
+            for (thisIndex = 0; thisIndex != peers.size(); ++thisIndex)
             {
-                if (rpi.peerId == myPid)
+                if (peers.get(thisIndex).peerId == myPid)
                 {
-                    me = rpi;
+                    myPeerInfo = peers.get(thisIndex);
                 }
             }
 
             final int numPeers = peers.size() - 1;
             // Initialize basic arrays of sender and receiver threads of size N;
             // very brute force, but this can be adjusted accordingly later
-            senders = new Sender[numPeers];
-            receivers = new Receiver[numPeers];
-            locks = new Object[numPeers];
-            for (int i = 0; i != numPeers + 1; ++i)
+            streams = new PeerStream[numPeers];
+            for (int i = 0; i != thisIndex; ++i)
             {
+                System.out.println("We should not get here");
+                System.out.println(i);
                 RemotePeerInfo rpi = peers.get(i);
-                if (me != null && rpi != me)
-                {
-                    senders[i] = new Sender(me.peerPort, me.peerAddress, rpi.peerPort, rpi.peerAddress, me.peerId, rpi.peerId);
-                    receivers[i] = new Receiver(me.peerPort, me.peerAddress, me.peerId, rpi.peerId);
-                    locks[i] = new Object();
-                    senders[i].start();
-                    receivers[i].start();
-                }
-                else
-                {
-                    myPeer = rpi;
-                    System.out.println("THIS IS ME! My ID: " + rpi.peerId);
-                }
+                streams[i] = new PeerStream(
+                        myPeerInfo.peerPort,
+                        myPeerInfo.peerAddress,
+                        rpi.peerPort,
+                        rpi.peerAddress,
+                        myPeerInfo.peerId,
+                        rpi.peerId);
+            }
+            for (int i = thisIndex + 1; i <= numPeers; ++i)
+            {
+                System.out.println("We got here!");
+                streams[i] = new PeerStream(myPeerInfo.peerPort, myPeerInfo.peerId);
             }
         }
         catch (Exception e)
         {
             throw e;
         }
+    }
+
+    // Method to be called by a receiver
+    public int findRandomPiece(PeerStream ps)
+    {
+
+//        RemotePeerInfo desired = null;
+//        for (RemotePeerInfo rpi : peers)
+//        {
+//            if (ps.peerID == rpi.peerId)
+//            {
+//                desired = rpi;
+//            }
+//        }
+//
+//        if (desired != null)
+//        {
+//            synchronized (this)
+//            {
+//                int nextIndex = desired.getAvailablePiece(myPeer.pieces, requestBuffer);
+//                requestBuffer.add(nextIndex);
+//            }
+//            // Get handle of corresponding sending thread
+//            Sender sender = senders[receiver.index];
+//            synchronized (sender)
+//            {
+//
+//            }
+//
+//        }
+        return 0;
     }
 
     public ArrayList<RemotePeerInfo> getPeerInfo()
@@ -101,6 +133,6 @@ public class ThreadManager {
 
     public RemotePeerInfo getMyPeerInfo()
     {
-        return myPeer;
+        return myPeerInfo;
     }
 }

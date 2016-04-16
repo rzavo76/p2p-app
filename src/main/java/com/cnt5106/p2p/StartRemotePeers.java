@@ -23,8 +23,7 @@ public class StartRemotePeers {
 	public void getConfiguration() 
 	{
 		String st;
-		int i1;
-		peerInfoVector = new Vector<RemotePeerInfo>();
+		peerInfoVector = new Vector<>();
 		try 
 		{
 			BufferedReader in = new BufferedReader(new FileReader("PeerInfo.cfg"));
@@ -32,7 +31,7 @@ public class StartRemotePeers {
 			{
 				 String[] tokens = st.split("\\s+");
 			     peerInfoVector.addElement(new RemotePeerInfo(Integer.parseInt(tokens[0]), 
-			     	tokens[1], Integer.parseInt(tokens[2])));
+			     	tokens[1], Integer.parseInt(tokens[2]), Boolean.parseBoolean(tokens[3])));
 			}
 			in.close();
 		}
@@ -51,10 +50,13 @@ public class StartRemotePeers {
 			String path = System.getProperty("user.dir");
 			// start clients at remote hosts
 			for (int i = 0; i < myStart.peerInfoVector.size(); i++) {
-				RemotePeerInfo pInfo = (RemotePeerInfo) myStart.peerInfoVector.elementAt(i);
+				RemotePeerInfo pInfo = myStart.peerInfoVector.elementAt(i);
 				System.out.println("Start remote peer " + pInfo.peerId +  " at " + pInfo.peerAddress );
-				Runtime.getRuntime().exec("ssh " + pInfo.peerAddress + " cd " + path 
-					+ "; java peerProcess " + pInfo.peerId);
+
+				String cmd = "Terminal -e cd " + path
+						+ "; mvn exec:java -Dexec.mainClass=\"com.cnt5106.p2p.peerProcess\" -Dexec.args=\"" + pInfo.peerId + "\" &";
+				Runtime rt = Runtime.getRuntime();
+				Process term = rt.exec(cmd);
 			}		
 			System.out.println("Starting all remote peers has done." );
 		}

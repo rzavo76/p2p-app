@@ -1,45 +1,46 @@
 package com.cnt5106.p2p;
 
-// Sender class created by Ryan Zavoral Feb. 16, 2016.
-// K + 1 sending threads are run by the thread manager for a socket
+// Receiver class created by Ryan Zavoral Feb. 16, 2016.
+// N Receiving threads are actively run by the thread manager to wait on a socket
 
 import java.lang.*;
+import java.net.Socket;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
-public class Sender extends NetworkThread {
-	private int targetPort;
-	private String targetHostname;
-	Sender(int port, String hostname, int targetPort, String targetHostname, 
-		int peerID, int targetPeerID) 
+public class Sender extends Thread {
+
+	private Socket socket;
+	private MessageHandler msgHandler;
+	private int peerID;
+	private BlockingQueue<byte[]> outgoing;
+
+	Sender(Socket socket, int peerID)
 	{
-		super(port, hostname, peerID, targetPeerID);
-		this.targetPort = targetPort;
-		this.targetHostname = targetHostname;
+		this.socket = socket;
+		this.peerID = peerID;
+		msgHandler = MessageHandler.getInstance();
+		outgoing = new LinkedBlockingQueue<>();
 	}
-	public int getTargetPort() 
+
+	public void run()
 	{
-		return targetPort;
+		try {
+			byte[] handshake = msgHandler.makeHandshake(peerID);
+			socket.getOutputStream().write(handshake);
+			byte[] next = outgoing.remove();
+			socket.getOutputStream().write(next);
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+		}
 	}
-	public String getTargetHostname() 
+
+
+	// Blocking Queue is thread safe
+	public void QueueMessage(byte[] msg)
 	{
-		return targetHostname;
-	}
-	public void setTargetPort(int targetPort) 
-	{
-		this.targetPort = targetPort;
-	}
-	public void setTargetHostname(String targetHostname) 
-	{
-		this.targetHostname = targetHostname;
-	}
-	public String toString() 
-	{
-		return "The receiver thread " + peerID + 
-		" for peer " + targetPeerID + 
-		"has port is " + port + 
-		" and the hostname is " + hostname;
-	}
-	public void run() 
-	{
-		System.out.println(toString());
+		outgoing.add(msg);
 	}
 }

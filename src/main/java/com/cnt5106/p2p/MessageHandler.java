@@ -65,6 +65,7 @@ public class MessageHandler {
 			case HAVE:
 			case BITFIELD:
 			case REQUEST:
+
 			case PIECE:
 			return makeBytes(type.getValue(), payload);
 			default:

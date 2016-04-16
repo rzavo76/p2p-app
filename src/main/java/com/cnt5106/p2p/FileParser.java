@@ -18,6 +18,7 @@ public class FileParser
 	private String fileName;
 	private int fileSize;
 	private int pieceSize;
+	private int numPieces;
 
 	private static FileParser mParser;
 
@@ -83,6 +84,7 @@ public class FileParser
 						throw new IOException("Unrecognized token in configuration file");
 				}
 			}
+			numPieces = (int)Math.ceil((double)fileSize/pieceSize);
 		}
 		catch (Exception e)
 		{
@@ -142,6 +144,11 @@ public class FileParser
 	public int getFileSize()
 	{
 		return fileSize;
+	}
+
+	public int getNumPieces()
+	{
+		return numPieces;
 	}
 
 	public int getPieceSize()
