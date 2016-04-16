@@ -4,8 +4,7 @@ import com.cnt5106.p2p.models.RemotePeerInfo;
 
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.*;
 
 /**
  * Created by Dylan Richardson on 3/13/16.
@@ -15,10 +14,19 @@ import java.util.HashSet;
  */
 public class ThreadManager {
     private PeerStream[] streams;
+    private HashSet<PeerStream> prefNeighbors;
     private ArrayList<RemotePeerInfo> peers;
     private RemotePeerInfo myPeerInfo;
     private peerProcess myPeer;
     private HashSet<Integer> requestBuffer;
+    private Timer prefNeighborsTimer;
+    private Timer optUnchokeTimer;
+    private Comparator<PeerStream> comparator;
+    private PriorityQueue<PeerStream> downloadQueue;
+
+    private int numPrefNeighbors;
+    private long unchokeInterval;
+    private long optUnchokeInterval;
 
     private static ThreadManager mThreadMgr;
 
@@ -38,7 +46,24 @@ public class ThreadManager {
      * Private constructor for the singleton
      */
     private ThreadManager()
-    {}
+    {
+        comparator = new Comparator<PeerStream>() {
+            @Override
+            public int compare(PeerStream p1, PeerStream p2) {
+                if (p1.getDownloadRate() > p2.getDownloadRate()){
+                    return -1;
+                }
+                else if (p1.getDownloadRate() < p2.getDownloadRate())
+                {
+                    return 1;
+                }
+                else
+                {
+                    return 0;
+                }
+            }
+        };
+    }
 
     /**
      * Description: Spins up all sending and receiving communication threads
@@ -56,7 +81,9 @@ public class ThreadManager {
         try {
             peers = fp.getPeersFromFile(peerInfoFile);
             fp.parseConfigFile(configFile);
-
+            numPrefNeighbors = fp.getNumPreferredNeighbors();
+            optUnchokeInterval = fp.getOptUnchokeInterval();
+            unchokeInterval = fp.getUnchokeInterval();
             int thisIndex;
             for (thisIndex = 0; thisIndex != peers.size(); ++thisIndex)
             {
@@ -72,8 +99,6 @@ public class ThreadManager {
             streams = new PeerStream[numPeers];
             for (int i = 0; i != thisIndex; ++i)
             {
-                System.out.println("We should not get here");
-                System.out.println(i);
                 RemotePeerInfo rpi = peers.get(i);
                 streams[i] = new PeerStream(
                         myPeerInfo.peerPort,
@@ -82,17 +107,44 @@ public class ThreadManager {
                         rpi.peerAddress,
                         myPeerInfo.peerId,
                         rpi.peerId);
+                streams[i].start();
             }
             for (int i = thisIndex + 1; i <= numPeers; ++i)
             {
-                System.out.println("We got here!");
                 streams[i] = new PeerStream(myPeerInfo.peerPort, myPeerInfo.peerId);
+                streams[i].start();
             }
+            prefNeighborsTimer = new Timer();
+            prefNeighborsTimer.schedule(
+                    new PreferredNeighborsTracker(numPrefNeighbors),
+                    0,
+                    unchokeInterval);
         }
         catch (Exception e)
         {
             throw e;
         }
+    }
+
+    public synchronized PriorityQueue<PeerStream> getDownloadQueue()
+    {
+        // Add streams to download queue in order of download speed
+        downloadQueue.clear();
+        for (int i = 0; i != streams.length; ++i)
+        {
+            downloadQueue.add(streams[i]);
+        }
+        return downloadQueue;
+    }
+
+    public HashSet<PeerStream> getPrefNeighbors()
+    {
+        return prefNeighbors;
+    }
+
+    public void setPrefNeighbors(HashSet<PeerStream> neighborSet)
+    {
+        prefNeighbors = neighborSet;
     }
 
     // Method to be called by a receiver

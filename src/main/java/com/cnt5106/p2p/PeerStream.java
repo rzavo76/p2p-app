@@ -1,5 +1,7 @@
 package com.cnt5106.p2p;
 
+import com.cnt5106.p2p.models.MessageType;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.ServerSocket;
@@ -20,15 +22,16 @@ import java.util.Queue;
  */
 public class PeerStream extends Thread {
 
-    private int port;
-    private String hostname;    // TODO: Unnecessary?
-    private int peerID;
-    private int targetPeerID;
+    private int port, targetPort;
+    private String hostname, targetHostName;    // TODO: Local hostname unnecessary?
+    private int peerID, targetPeerID;
     private Socket socket;
     private Sender sender;
     private MessageHandler msgHandler;
     private boolean connector;
     private BTLogger btLogger;
+    private boolean chokeRemote = false;
+    private int bytesDownloaded;
 
     PeerStream(int port, String hostname, int targetPort, String targetHostName,
                int peerID, int targetPeerID)
@@ -38,18 +41,10 @@ public class PeerStream extends Thread {
         this.hostname = hostname;
         this.peerID = peerID;
         this.targetPeerID = targetPeerID;
-        msgHandler = MessageHandler.getInstance();
-        btLogger = BTLogger.getInstance();
-        try {
-            socket = new Socket(targetHostName, targetPort, null, port);
-            sender = new Sender(socket, peerID);
-            sender.start();
-            start();
-        }
-        catch (IOException ioe)
-        {
-            ioe.printStackTrace();
-        }
+        this.targetPort = targetPort;
+        this.targetHostName = targetHostName;
+        this.msgHandler = MessageHandler.getInstance();
+        this.btLogger = BTLogger.getInstance();
     }
 
     PeerStream(int port, int peerID)
@@ -59,24 +54,25 @@ public class PeerStream extends Thread {
         this.connector = false;
         this.msgHandler = MessageHandler.getInstance();
         this.btLogger = BTLogger.getInstance();
-        try
-        {
-            ServerSocket listener = new ServerSocket(port);
-            socket = listener.accept();
-            sender = new Sender(socket, peerID);
-            sender.start();
-            start();
-        }
-        catch(IOException ioe)
-        {
-            ioe.printStackTrace();
-        }
     }
 
     public void run()
     {
         try
         {
+            if (connector)
+            {
+                socket = new Socket(targetHostName, targetPort, null, port);
+                sender = new Sender(socket, peerID);
+                sender.start();
+            }
+            else
+            {
+                ServerSocket listener = new ServerSocket(port);
+                socket = listener.accept();
+                sender = new Sender(socket, peerID);
+                sender.start();
+            }
             InputStream inStream = socket.getInputStream();
             byte[] bytes = new byte[32];
             inStream.read(bytes);
@@ -93,7 +89,40 @@ public class PeerStream extends Thread {
                 }
                 btLogger.writeToLog(this.peerID, btLogger.TCPConnectFrom(this.peerID, peerID));
             }
+
+            while (!Thread.interrupted())
+            {
+                synchronized (this)
+                {
+
+                }
+            }
             socket.close();
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+    }
+
+    public synchronized void chokeRemote()
+    {
+        chokeRemote = true;
+        try {
+            sender.clearMessages();
+            sender.queueMessage(msgHandler.makeMessage(MessageType.CHOKE));
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+    }
+
+    public synchronized void unchokeRemote()
+    {
+        chokeRemote = false;
+        try {
+            sender.queueMessage(msgHandler.makeMessage(MessageType.UNCHOKE));
         }
         catch (Exception e)
         {
@@ -104,5 +133,10 @@ public class PeerStream extends Thread {
     public synchronized int getTargetPeerID()
     {
         return targetPeerID;
+    }
+
+    public int getDownloadRate()
+    {
+        return bytesDownloaded;
     }
 }

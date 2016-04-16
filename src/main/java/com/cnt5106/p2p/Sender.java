@@ -39,8 +39,13 @@ public class Sender extends Thread {
 
 
 	// Blocking Queue is thread safe
-	public void QueueMessage(byte[] msg)
+	public void queueMessage(byte[] msg)
 	{
 		outgoing.add(msg);
+	}
+
+	public void clearMessages()
+	{
+		outgoing.clear();
 	}
 }
