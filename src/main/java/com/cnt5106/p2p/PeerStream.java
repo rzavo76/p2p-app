@@ -4,6 +4,7 @@ import com.cnt5106.p2p.models.MessageType;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Arrays;
@@ -70,7 +71,9 @@ public class PeerStream extends Thread {
             }
             else
             {
-                ServerSocket listener = new ServerSocket(port);
+                ServerSocket listener = new ServerSocket();
+                listener.setReuseAddress(true);
+                listener.bind(new InetSocketAddress(port));
                 btLogger.writeToLog(this.peerID, btLogger.socketStarted(this.peerID, !connector));
                 socket = listener.accept();
                 sender = new Sender(socket, peerID);
@@ -92,15 +95,6 @@ public class PeerStream extends Thread {
                 }
                 btLogger.writeToLog(this.peerID, btLogger.TCPConnectFrom(this.peerID, peerID));
             }
-
-            while (!Thread.interrupted())
-            {
-                synchronized (this)
-                {
-
-                }
-            }
-            socket.close();
         }
         catch (Exception e)
         {
