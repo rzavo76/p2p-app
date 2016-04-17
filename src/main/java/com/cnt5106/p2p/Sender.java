@@ -42,6 +42,13 @@ public class Sender extends Thread {
 				e.printStackTrace();
 			}
 		}
+		finally {
+			try {
+				socket.close();
+			}
+			catch (Exception e)
+			{}
+		}
 	}
 
 

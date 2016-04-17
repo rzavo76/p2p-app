@@ -2,6 +2,10 @@ package com.cnt5106.p2p;
 
 import com.cnt5106.p2p.models.RemotePeerInfo;
 
+import java.net.InetSocketAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.net.SocketAddress;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.util.*;
@@ -20,6 +24,7 @@ public class ThreadManager {
     private Timer prefNeighborsTimer;
     private Timer optUnchokeTimer;
     private Comparator<PeerStream> comparator;
+
 
     private int numPrefNeighbors;
     private long unchokeInterval;
@@ -76,11 +81,13 @@ public class ThreadManager {
         Path configFile = FileSystems.getDefault().getPath("Common.cfg");
         FileParser fp = FileParser.getInstance();
         try {
+            // read peers and common config
             peers = fp.getPeersFromFile(peerInfoFile);
             fp.parseConfigFile(configFile);
             numPrefNeighbors = fp.getNumPreferredNeighbors();
             optUnchokeInterval = fp.getOptUnchokeInterval();
             unchokeInterval = fp.getUnchokeInterval();
+            // find the index of the peer
             int thisIndex;
             for (thisIndex = 0; thisIndex != peers.size(); ++thisIndex)
             {
@@ -91,9 +98,9 @@ public class ThreadManager {
                 }
             }
             final int numPeers = peers.size() - 1;
-            // Initialize basic arrays of sender and receiver threads of size N;
-            // very brute force, but this can be adjusted accordingly later
+            // initialize the array of connections
             streams = new PeerStream[numPeers];
+            // connect to every peer that connected before
             for (int i = 0; i != thisIndex; ++i)
             {
                 RemotePeerInfo rpi = peers.get(i);
@@ -106,6 +113,7 @@ public class ThreadManager {
                         rpi.peerId);
                 streams[i].start();
             }
+            //set
             for (int i = thisIndex; i < numPeers; ++i)
             {
                 streams[i] = new PeerStream(myPeerInfo.peerPort, myPeerInfo.peerId);
@@ -122,6 +130,16 @@ public class ThreadManager {
         {
             throw e;
         }
+    }
+
+    public synchronized Socket waitForSocket() throws Exception
+    {
+        //create socket by temporarily accepting from a listener
+        ServerSocket listener = new ServerSocket();
+        listener.bind(new InetSocketAddress(myPeerInfo.peerAddress, myPeerInfo.peerPort));
+        Socket socket = listener.accept();
+        listener.close();
+        return socket;
     }
 
     public synchronized PriorityQueue<PeerStream> getDownloadQueue()

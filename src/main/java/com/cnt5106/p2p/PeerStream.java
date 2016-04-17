@@ -4,6 +4,7 @@ import com.cnt5106.p2p.models.MessageType;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -32,8 +33,11 @@ public class PeerStream extends Thread {
     private MessageHandler msgHandler;
     private boolean connector;
     private BTLogger btLogger;
+    private ThreadManager threadManager;
     private boolean chokeRemote = false;
     private int bytesDownloaded;
+
+    private ServerSocket listener;
 
     PeerStream(int port, String hostname, int targetPort, String targetHostName,
                int peerID, int targetPeerID)
@@ -47,15 +51,17 @@ public class PeerStream extends Thread {
         this.targetHostName = targetHostName;
         this.msgHandler = MessageHandler.getInstance();
         this.btLogger = BTLogger.getInstance();
+        this.threadManager = ThreadManager.getInstance();
     }
 
     PeerStream(int port, int peerID)
     {
+        this.connector = false;
         this.peerID = peerID;
         this.port = port;
-        this.connector = false;
         this.msgHandler = MessageHandler.getInstance();
         this.btLogger = BTLogger.getInstance();
+        this.threadManager = ThreadManager.getInstance();
     }
 
     public void run()
@@ -64,18 +70,15 @@ public class PeerStream extends Thread {
         {
             if (connector)
             {
-                socket = new Socket(targetHostName, targetPort, null, port);
+                socket = new Socket(InetAddress.getByName(targetHostName), targetPort, InetAddress.getByName(hostname), port);
                 btLogger.writeToLog(this.peerID, btLogger.socketStarted(this.peerID, !connector));
                 sender = new Sender(socket, peerID);
                 sender.start();
             }
             else
             {
-                ServerSocket listener = new ServerSocket();
-                listener.setReuseAddress(true);
-                listener.bind(new InetSocketAddress(port));
+                socket = threadManager.waitForSocket();
                 btLogger.writeToLog(this.peerID, btLogger.socketStarted(this.peerID, !connector));
-                socket = listener.accept();
                 sender = new Sender(socket, peerID);
                 sender.start();
             }
@@ -107,18 +110,10 @@ public class PeerStream extends Thread {
         }
         finally {
             try {
-                if (socket != null && socket.isBound())
-                    socket.close();
+                socket.close();
             }
             catch (Exception e)
-            {
-                try {
-                    BTLogger.getInstance().writeToLog(peerID, Arrays.toString(e.getStackTrace()));
-                }
-                catch (IOException ioe) {
-                    e.printStackTrace();
-                }
-            }
+            {}
         }
     }
 
