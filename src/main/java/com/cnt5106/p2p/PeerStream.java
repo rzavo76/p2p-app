@@ -13,6 +13,8 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Queue;
 
+import static com.cnt5106.p2p.models.MessageType.*;
+
 /**
  * Created by Dylan Richardson on 4/10/16.
  *
@@ -98,6 +100,41 @@ public class PeerStream extends Thread {
                 }
                 btLogger.writeToLog(this.peerID, btLogger.TCPConnectFrom(this.peerID, peerID));
             }
+            // start reading messages
+            byte[] lengthBytes = new byte[4];
+            inStream.read(lengthBytes);
+            int bytesToRead = java.nio.ByteBuffer.wrap(lengthBytes).getInt();
+            MessageType type = MessageType.getMessageTypeFromByte((byte)inStream.read());
+            if(bytesToRead > 1)
+            {
+                byte[] payload = new byte[bytesToRead - 1];
+                switch(type)
+                {
+                    case HAVE:
+                    case BITFIELD:
+                    case REQUEST:
+                    case PIECE:
+                        // move payload etc
+                        //notify something
+                    default:
+                        // error
+                }
+            }
+            else
+            {
+                switch(type)
+                {
+                    case CHOKE:
+                    case UNCHOKE:
+                    case INTERESTED:
+                    case NOTINTERESTED:
+                        // notify something
+                    default:
+                        // error
+                }
+            }
+            sender.setRunning(false);
+            sender.notify();
         }
         catch (Exception e)
         {

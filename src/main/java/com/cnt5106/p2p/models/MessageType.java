@@ -5,23 +5,28 @@ package com.cnt5106.p2p.models;
 
 public enum MessageType {
 	//link values with types
-	CHOKE ((byte)0),
-	UNCHOKE ((byte)1),
-	INTERESTED ((byte)2),
-	NOTINTERESTED ((byte)3),
-	HAVE ((byte)4),
-	BITFIELD ((byte)5),
-	REQUEST ((byte)6),
-	PIECE ((byte)7);
+	CHOKE,
+	UNCHOKE,
+	INTERESTED,
+	NOTINTERESTED,
+	HAVE,
+	BITFIELD,
+	REQUEST,
+	PIECE;
 	
 	private final byte value;
-	private MessageType(byte value) 
-	{
-		this.value = value;
-	}
+	private MessageType() { this.value = (byte)ordinal(); }
 	//only retrieve the type value without altering it
-	public byte getValue() 
+	public byte getValue() { return value; }
+
+	public static MessageType getMessageTypeFromByte(byte type)
 	{
-		return value;
+		try
+		{
+			return MessageType.values()[type];
+		} catch( ArrayIndexOutOfBoundsException e )
+		{
+			throw new IllegalArgumentException("Unknown enum value :"+ type);
+		}
 	}
 }

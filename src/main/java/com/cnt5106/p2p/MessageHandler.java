@@ -65,7 +65,6 @@ public class MessageHandler {
 			case HAVE:
 			case BITFIELD:
 			case REQUEST:
-
 			case PIECE:
 			return makeBytes(type.getValue(), payload);
 			default:
@@ -105,19 +104,5 @@ public class MessageHandler {
 			}
 		}
 		return pID;
-	}
-
-	public byte readMessageType(byte[] message)
-	{
-		if(java.nio.ByteBuffer.wrap(Arrays.copyOfRange(message, 0, 4)).getInt() == (message.length - 4))
-		{
-			return message[4];
-		}
-		return (byte) - 1;
-	}
-
-	public byte[] readMessagePayload(byte[] message)
-	{
-		return Arrays.copyOfRange(message, 5, message.length);
 	}
 }

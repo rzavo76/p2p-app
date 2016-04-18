@@ -16,6 +16,7 @@ public class Sender extends Thread {
 	private MessageHandler msgHandler;
 	private int peerID;
 	private BlockingQueue<byte[]> outgoing;
+	private boolean running = true;
 
 	Sender(Socket socket, int peerID)
 	{
@@ -30,8 +31,14 @@ public class Sender extends Thread {
 		try {
 			byte[] handshake = msgHandler.makeHandshake(peerID);
 			socket.getOutputStream().write(handshake);
-			byte[] next = outgoing.remove();
-			socket.getOutputStream().write(next);
+			while(true) {
+				wait();
+				if(!running) {
+					break;
+				}
+				byte[] next = outgoing.remove();
+				socket.getOutputStream().write(next);
+			}
 		}
 		catch (Exception e)
 		{
@@ -61,5 +68,9 @@ public class Sender extends Thread {
 	public void clearMessages()
 	{
 		outgoing.clear();
+	}
+
+	public void setRunning(boolean running) {
+		this.running = running;
 	}
 }

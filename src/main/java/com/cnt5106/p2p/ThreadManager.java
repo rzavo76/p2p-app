@@ -113,7 +113,7 @@ public class ThreadManager {
                         rpi.peerId);
                 streams[i].start();
             }
-            //set
+            //set up the other peer connections as "listeners"
             for (int i = thisIndex; i < numPeers; ++i)
             {
                 streams[i] = new PeerStream(myPeerInfo.peerPort, myPeerInfo.peerId);
