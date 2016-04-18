@@ -142,6 +142,13 @@ public class ThreadManager {
         return socket;
     }
 
+    public synchronized void broadcastHaveMessage(byte[] message) {
+        for (PeerStream ps : streams)
+        {
+            ps.outputByteArray(message);
+        }
+    }
+
     public synchronized PriorityQueue<PeerStream> getDownloadQueue()
     {
         // Add streams to download queue in order of download speed

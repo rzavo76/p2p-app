@@ -38,6 +38,7 @@ public class PeerStream extends Thread {
     private ThreadManager threadManager;
     private boolean chokeRemote = false;
     private int bytesDownloaded;
+    private boolean interestingPeer;
 
     private ServerSocket listener;
 
@@ -110,14 +111,51 @@ public class PeerStream extends Thread {
                 byte[] payload = new byte[bytesToRead - 1];
                 switch(type)
                 {
+                    case CHOKE:
+                        // TODO: Handle by telling the sender to not send anything except INTERESTED or NOTINTERESTED
+                        // TODO: messages until it receives an UNCHOKE message
+                        break;
+                    case UNCHOKE:
+                        // TODO: There are two scenarios: We receive an UNCHOKE when we don't actually want anything from
+                        // TODO: this peer, or we still want something.
+                        // TODO: Former case:   I can't see this happening unless the NOTINTERESTED message is still in
+                        // TODO:                transit. It's probably safest to send another NOTINTERESTED message.
+                        // TODO: Latter case:   Send out a REQUEST message for a random piece by alerting ThreadManager,
+                        // TODO:                who will synchronously choose a random required piece that matches with
+                        // TODO:                this peer's bit field
+                        break;
+                    case INTERESTED:
+                        // TODO: Sort out the peers who are interested and not interested; random selection should be only for those
+                        // TODO: who are interested. ThreadManager has to maintain the mutable list. Has to check for interested
+                        // TODO: as well in case the peer was not previously interested. Update: see below
+                        break;
+                    case NOTINTERESTED:
+                        // TODO: Same as above; locally track previous declaration of 'ifInterested' though. If it is a duplicate
+                        // TODO: message, there is no need to alert the ThreadManager.
+                        // TODO: Additionally, if this peer has a full file, it can shut off its connection with the neighbor
+                        // TODO: permanently. This is how the entire process will close out.
+                        break;
                     case HAVE:
+                        // TODO: Alert Thread Manager with message: Thread Manager will make it respond interested or not interested,
+                        // TODO: and 'interestingPeer' will be updated accordingly
+                        break;
                     case BITFIELD:
+                        // TODO: Alert ThreadManager to update local copy of bit field and prompt it to reply with an outgoing
+                        // TODO: INTERESTED or NOTINTERESTED message and update 'interestingPeer'
+                        break;
                     case REQUEST:
+                        // TODO: Retrieve appropriate piece from the PieceManager and send it through the Sender as a PIECE
+                        // TODO: message
+                        break;
                     case PIECE:
-                        // move payload etc
-                        //notify something
+                        // TODO: 1. Use Piece Manager to write the payload
+                        // TODO: 2. Alert Thread Manager with the new piece so it can update own bit field and send out HAVE
+                        // TODO:    through all PeerStreams
+                        // TODO: 3. Send out another REQUEST message or a NOTINTERESTED if everything is complete
+                        break;
                     default:
                         // error
+                        break;
                 }
             }
             else
@@ -170,6 +208,13 @@ public class PeerStream extends Thread {
                 e.printStackTrace();
             }
         }
+    }
+
+
+
+    public void outputByteArray(byte[] message)
+    {
+        sender.queueMessage(message);
     }
 
     public synchronized void unchokeRemote()
