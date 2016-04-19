@@ -37,11 +37,13 @@ public class PeerStream extends Thread {
     private PieceManager pcManager;
     private ThreadManager threadManager;
     private boolean chokeRemote = false;
+    private boolean choked = false;
     private long bytesDownloaded;
     private final Object downloadLock;
     private boolean interestingPeer;
     private boolean receivedInterested = true;
     private boolean running = true;
+    private int outgoingIndexRequest = -1;
 
     PeerStream(int port, String hostName, int targetPort, String targetHostName,
                int peerID, int targetPeerID, int numberOfPieces) throws Exception
@@ -201,8 +203,7 @@ public class PeerStream extends Thread {
         switch(type)
         {
             case CHOKE:
-                // TODO: Handle by telling the sender to not send anything except INTERESTED or NOTINTERESTED
-                // TODO: messages until it receives an UNCHOKE message
+                CHOKEReceived();
                 break;
             case UNCHOKE:
                 // TODO: There are two scenarios: We receive an UNCHOKE when we don't actually want anything from
@@ -264,6 +265,8 @@ public class PeerStream extends Thread {
 
     private void PIECEReceived(byte[] payload) throws Exception
     {
+        // Update outgoing request check so CHOKE doesn't remove piece index from request buffer
+        outgoingIndexRequest = -1;
         // parse payload for piece index and piece
         int pieceIndex = java.nio.ByteBuffer.wrap(Arrays.copyOfRange(payload, 0, 4)).getInt();
         byte[] piece = Arrays.copyOfRange(payload, 4, payload.length);
@@ -272,14 +275,14 @@ public class PeerStream extends Thread {
         //update bitfield and send out global have
         threadManager.addPieceIndex(pieceIndex);
         // see whether peer needs a piece from the bitfield
-        int nextPieceIndex = threadManager.getRandomAvailablePieceIndex(this);
-        if (nextPieceIndex != -1)
+        outgoingIndexRequest = threadManager.getRandomAvailablePieceIndex(this);
+        if (outgoingIndexRequest != -1)
         {
             // send request message
             // get random pieceIndex
             // package piece index in byte array
             ByteBuffer message = ByteBuffer.allocate(4);
-            message.putInt(nextPieceIndex);
+            message.putInt(outgoingIndexRequest);
             // send request message
             outputByteArray(msgHandler.makeMessage(REQUEST, message.array()));
         }
@@ -288,6 +291,18 @@ public class PeerStream extends Thread {
             // send not interested message
             outputByteArray(msgHandler.makeMessage(NOTINTERESTED));
         }
+    }
+
+    private void CHOKEReceived()
+    {
+        // CHOKE received before PIECE; inform ThreadManager of failed outgoing REQUEST
+        if (outgoingIndexRequest != -1)
+        {
+            threadManager.handleIncompleteRequest(outgoingIndexRequest);
+            outgoingIndexRequest = -1;
+        }
+        // We actually might not ever need to access this variable
+        choked = true;
     }
 
     public synchronized void chokeRemote()
