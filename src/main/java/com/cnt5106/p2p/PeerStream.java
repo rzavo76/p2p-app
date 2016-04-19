@@ -39,7 +39,6 @@ public class PeerStream extends Thread {
     private boolean chokeRemote = false;
     private long bytesDownloaded;
     private final Object downloadLock;
-    private boolean interestingPeer;
     private boolean receivedInterested = true;
     private boolean running = true;
 
@@ -259,24 +258,7 @@ public class PeerStream extends Thread {
         //update bitfield and send out global have
         threadManager.addPieceIndex(pieceIndex);
         // see whether peer needs a piece from the bitfield
-        int nextPieceIndex = threadManager.getRandomAvailablePieceIndex(this);
-        if (nextPieceIndex != -1)
-        {
-            interestingPeer = true;
-            // send request message
-            // get random pieceIndex
-            // package piece index in byte array
-            ByteBuffer message = ByteBuffer.allocate(4);
-            message.putInt(nextPieceIndex);
-            // send request message
-            outputByteArray(msgHandler.makeMessage(REQUEST, message.array()));
-        }
-        else
-        {
-            interestingPeer = false;
-            // send not interested message
-            outputByteArray(msgHandler.makeMessage(NOTINTERESTED));
-        }
+        makeNextRequestOrSendNOTINTERESTED();
     }
 
     // TODO: Handle by telling the sender to not send anything except INTERESTED or NOTINTERESTED
@@ -295,7 +277,7 @@ public class PeerStream extends Thread {
     // TODO:                this peer's bit field
     private void UNCHOKEReceived() throws Exception
     {
-
+        makeNextRequestOrSendNOTINTERESTED();
     }
 
     // TODO: Sort out the peers who are interested and not interested; random selection should be only for those
@@ -304,6 +286,7 @@ public class PeerStream extends Thread {
     private void INTERESTEDReceived() throws Exception
     {
         receivedInterested = true;
+
     }
 
     // TODO: Same as above; locally track previous declaration of 'ifInterested' though. If it is a duplicate
@@ -315,6 +298,25 @@ public class PeerStream extends Thread {
         receivedInterested = false;
     }
 
+    private void makeNextRequestOrSendNOTINTERESTED() throws Exception
+    {
+        int pieceIndex = threadManager.getRandomAvailablePieceIndex(this);
+        if (pieceIndex != -1)
+        {
+            // send request message
+            // get random pieceIndex
+            // package piece index in byte array
+            ByteBuffer message = ByteBuffer.allocate(4);
+            message.putInt(pieceIndex);
+            // send request message
+            outputByteArray(msgHandler.makeMessage(REQUEST, message.array()));
+        }
+        else
+        {
+            // send not interested message
+            outputByteArray(msgHandler.makeMessage(NOTINTERESTED));
+        }
+    }
 
     public void needPiece() throws Exception
     {
@@ -323,12 +325,10 @@ public class PeerStream extends Thread {
         // update peer with the status of interested
         if(interested)
         {
-            interestingPeer = true;
             outputByteArray(msgHandler.makeMessage(INTERESTED));
         }
         else
         {
-            interestingPeer = false;
             outputByteArray(msgHandler.makeMessage(NOTINTERESTED));
         }
     }
