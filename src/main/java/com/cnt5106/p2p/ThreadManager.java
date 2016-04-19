@@ -24,6 +24,7 @@ public class ThreadManager {
     private Timer prefNeighborsTimer;
     private Timer optUnchokeTimer;
     private Comparator<PeerStream> comparator;
+    private Random randomizer;
 
     private BitSet bitfield;
     private int numPrefNeighbors;
@@ -65,6 +66,7 @@ public class ThreadManager {
                 }
             }
         };
+        randomizer = new Random();
     }
 
     /**
@@ -87,6 +89,10 @@ public class ThreadManager {
             numPrefNeighbors = fp.getNumPreferredNeighbors();
             optUnchokeInterval = fp.getOptUnchokeInterval();
             unchokeInterval = fp.getUnchokeInterval();
+            int numPieces = fp.getNumPieces();
+            bitfield = new BitSet(numPieces);
+            // Initialize the piece manager
+            PieceManager.setInstance(fp.getNumPieces(), fp.getFileSize(), fp.getPieceSize(), myPid, fp.getFileName());
             // find the index of the peer
             int thisIndex;
             for (thisIndex = 0; thisIndex != peers.size(); ++thisIndex)
@@ -110,13 +116,18 @@ public class ThreadManager {
                         rpi.peerPort,
                         rpi.peerAddress,
                         myPeerInfo.peerId,
-                        rpi.peerId);
+                        rpi.peerId,
+                        numPieces);
                 streams[i].start();
             }
             //set up the other peer connections as "listeners"
             for (int i = thisIndex; i < numPeers; ++i)
             {
-                streams[i] = new PeerStream(myPeerInfo.peerPort, myPeerInfo.peerId);
+                streams[i] = new PeerStream(
+                        myPeerInfo.peerPort,
+                        myPeerInfo.peerAddress,
+                        myPeerInfo.peerId,
+                        numPieces);
                 streams[i].start();
             }
             // Spin up timer for choosing preferred neighbors
@@ -142,6 +153,18 @@ public class ThreadManager {
         return socket;
     }
 
+    public boolean needPiece(PeerStream ps)
+    {
+        // TODO: Implement
+        return true;
+    }
+
+    public boolean hasFullFile()
+    {
+        // TODO: Implement
+        return false;
+    }
+
     public synchronized void broadcastHaveMessage(byte[] message) {
         for (PeerStream ps : streams)
         {
@@ -161,35 +184,51 @@ public class ThreadManager {
         return downloadQueue;
     }
 
-    // Method to be called by a receiver
-    public int findRandomPiece(PeerStream ps)
+    public void addPieceIndex(int index)
     {
+        synchronized (bitfield) {
+            bitfield.set(index);
+        }
+    }
 
-//        RemotePeerInfo desired = null;
-//        for (RemotePeerInfo rpi : peers)
-//        {
-//            if (ps.peerID == rpi.peerId)
-//            {
-//                desired = rpi;
-//            }
-//        }
-//
-//        if (desired != null)
-//        {
-//            synchronized (this)
-//            {
-//                int nextIndex = desired.getAvailablePiece(myPeer.pieces, requestBuffer);
-//                requestBuffer.add(nextIndex);
-//            }
-//            // Get handle of corresponding sending thread
-//            Sender sender = senders[receiver.index];
-//            synchronized (sender)
-//            {
-//
-//            }
-//
-//        }
-        return 0;
+    public byte[] getBitField()
+    {
+        synchronized (bitfield) {
+            return bitfield.toByteArray();
+        }
+    }
+
+    public int getRandomAvailablePieceIndex(PeerStream remote)
+    {
+        // If this value stays at -1, no pieces are desired
+        int index = -1;
+        ArrayList<Integer> availPieces = remote.getAvailPieces();
+        synchronized (bitfield) {
+            while (!availPieces.isEmpty()) {
+                int arrayIndex = randomizer.nextInt(availPieces.size());
+                int pieceIndex = availPieces.get(arrayIndex);
+                // Don't return pieces for outgoing requests, but also don't delete them from
+                // available in case they don't go through
+                if (requestBuffer.contains(pieceIndex))
+                    continue;
+                // If pieces are already owned by our process, we never will want them from a
+                // peer again. Even though they are still available, we are removing them from
+                // the peer info class corresponding to that peer.
+                if (bitfield.get(pieceIndex)) {
+                    // The swap is to ensure an O(1) random lookup. There will never
+                    // be any need to get specific index, because it's always randomized. Therefore,
+                    // switching order of available piece indices presents no problem
+                    Integer lastPiece = availPieces.get(availPieces.size() - 1);
+                    availPieces.set(arrayIndex, lastPiece);
+                    availPieces.remove(availPieces.size() - 1);
+                } else {
+                    index = pieceIndex;
+                    break;
+                }
+            }
+        }
+        remote.setAvailPieces(availPieces);
+        return index;
     }
 
     public ArrayList<RemotePeerInfo> getPeerInfo()

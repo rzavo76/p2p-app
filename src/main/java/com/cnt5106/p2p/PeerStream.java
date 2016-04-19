@@ -28,7 +28,7 @@ public class PeerStream extends Thread {
     private int port, targetPort;
     private String hostname, targetHostName;
     private int peerID, targetPeerID;
-    private BitSet pieces;
+    private ArrayList<Integer> availPieces;
     private Socket socket;
     private Sender sender;
     private MessageHandler msgHandler;
@@ -42,29 +42,30 @@ public class PeerStream extends Thread {
     private boolean receivedInterested = true;
     private boolean running = true;
 
-    PeerStream(int port, String hostname, int targetPort, String targetHostName,
+    PeerStream(int port, String hostName, int targetPort, String targetHostName,
                int peerID, int targetPeerID, int numberOfPieces) throws Exception
     {
         this.connector = true;
         this.port = port;
-        this.hostname = hostname;
         this.targetPort = targetPort;
         this.targetHostName = targetHostName;
         this.peerID = peerID;
         this.targetPeerID = targetPeerID;
-        this.pieces = new BitSet(numberOfPieces);
+        this.hostname = hostName;
+        this.availPieces = new ArrayList<>(numberOfPieces);
         this.msgHandler = MessageHandler.getInstance();
         this.btLogger = BTLogger.getInstance();
         this.pcManager = PieceManager.getInstance();
         this.threadManager = ThreadManager.getInstance();
     }
 
-    PeerStream(int port, int peerID, int numberOfPieces) throws Exception
+    PeerStream(int port, String hostName, int peerID, int numberOfPieces) throws Exception
     {
         this.connector = false;
         this.peerID = peerID;
         this.port = port;
-        this.pieces = new BitSet(numberOfPieces);
+        this.hostname = hostName;
+        this.availPieces = new ArrayList<>(numberOfPieces);
         this.msgHandler = MessageHandler.getInstance();
         this.btLogger = BTLogger.getInstance();
         this.pcManager = PieceManager.getInstance();
@@ -126,19 +127,22 @@ public class PeerStream extends Thread {
                             // TODO: Alert Thread Manager with message: Thread Manager will make it respond interested or not interested,
                             // TODO: and 'interestingPeer' will be updated accordingly
                             int have = java.nio.ByteBuffer.wrap(payload).getInt(); //get index of piece they have
-                            pieces.set(have); // update index
+                            availPieces.add(have); // update index
                             needPiece(); // does the peer need anything? - outputs interested or not interested to connected peer
                             break;
                         case BITFIELD:
                             // TODO: Alert ThreadManager to update local copy of bit field and prompt it to reply with an outgoing
                             // TODO: INTERESTED or NOTINTERESTED message and update 'interestingPeer'
-                            pieces = BitSet.valueOf(payload); // assign pieces
+                            setPiecesWithBitfield(BitSet.valueOf(payload)); // assign pieces
                             needPiece();
                             break;
                         case REQUEST:
                             // TODO: Retrieve appropriate piece from the PieceManager and send it through the Sender as a PIECE
                             // TODO: message
-                            int pieceIndex = threadManager.findRandomPiece(pieces); // get random piece index
+                            int pieceIndex = threadManager.getRandomAvailablePieceIndex(this); // get random piece index
+                            // TODO: Ryan, I don't know why you're retrieving a random piece here. You should be talking
+                            // TODO: to the PieceManager directly here to get a non-random piece to send since the other
+                            // TODO: side did the randomization
                             ByteBuffer buffer = ByteBuffer.allocate(4);
                             buffer.putInt(pieceIndex); // package in byte array
                             outputByteArray(msgHandler.makeMessage(REQUEST, buffer.array())); // request piece
@@ -247,7 +251,9 @@ public class PeerStream extends Thread {
 
     public void needPiece() throws Exception
     {
-        boolean interested = threadManager.needPiece(pieces); // Asks the threadmanager whether we need a piece
+
+        // TODO: You can use getRandomPiece for this one too but then it will add it to the request buffer
+        boolean interested = threadManager.needPiece(this); // Asks the threadmanager whether we need a piece
         // update peer with the status of interested
         if(interested)
         {
@@ -281,7 +287,27 @@ public class PeerStream extends Thread {
 
     public int getDownloadRate() { return bytesDownloaded; }
 
+    public ArrayList<Integer> getAvailPieces()
+    {
+        return availPieces;
+    }
+
+    public void setAvailPieces(ArrayList<Integer> array)
+    {
+        availPieces = array;
+    }
+
     public boolean peerStreamRunning() { return running; }
+
+    // Helper method for initial bitfield construction
+    private void setPiecesWithBitfield(BitSet bitSet)
+    {
+        for (int i = 0; i != bitSet.size(); ++i)
+        {
+            if (bitSet.get(i))
+                availPieces.add(i);
+        }
+    }
 
 
 }
