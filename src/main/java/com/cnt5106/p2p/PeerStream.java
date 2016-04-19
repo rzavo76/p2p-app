@@ -260,7 +260,7 @@ public class PeerStream extends Thread {
         //update bitfield and send out global have
         threadManager.addPieceIndex(pieceIndex);
         // see whether peer needs a piece from the bitfield
-        makeNextRequestOrSendNOTINTERESTED();
+        makeNextREQUESTOrSendNOTINTERESTED();
     }
 
     // TODO: Handle by telling the sender to not send anything except INTERESTED or NOTINTERESTED
@@ -286,7 +286,7 @@ public class PeerStream extends Thread {
     // TODO:                this peer's bit field
     private void UNCHOKEReceived() throws Exception
     {
-        makeNextRequestOrSendNOTINTERESTED();
+        makeNextREQUESTOrSendNOTINTERESTED();
         choked = false;
     }
 
@@ -308,7 +308,7 @@ public class PeerStream extends Thread {
         receivedInterested = false;
     }
 
-    private void makeNextRequestOrSendNOTINTERESTED() throws Exception
+    private void makeNextREQUESTOrSendNOTINTERESTED() throws Exception
     {
         int pieceIndex = threadManager.getRandomAvailablePieceIndex(this);
         if (pieceIndex != -1)
