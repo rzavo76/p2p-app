@@ -78,7 +78,7 @@ public class Sender extends Thread {
 		outgoing.clear();
 	}
 
-	public void setRunning(boolean running) {
-		this.running = running;
+	public void close() {
+		this.running = false;
 	}
 }
