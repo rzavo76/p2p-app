@@ -21,10 +21,10 @@ public class ThreadManager {
     private ArrayList<RemotePeerInfo> peers;
     private RemotePeerInfo myPeerInfo;
     private HashSet<Integer> requestBuffer;
-    private Timer prefNeighborsTimer;
-    private Timer optUnchokeTimer;
-    private Comparator<PeerStream> comparator;
+    private ArrayList<PeerStream> interestedPeers;
+    private HashMap<PeerStream, Integer> interestedPeersIndexMap;
     private Random randomizer;
+    private NeighborTaskManager neighborTaskManager;
 
     private BitSet bitfield;
     // Technically, the above BitSet can be used as its own lock since it's
@@ -53,22 +53,6 @@ public class ThreadManager {
      */
     private ThreadManager()
     {
-        comparator = new Comparator<PeerStream>() {
-            @Override
-            public int compare(PeerStream p1, PeerStream p2) {
-                if (p1.getDownloadRate() > p2.getDownloadRate()){
-                    return -1;
-                }
-                else if (p1.getDownloadRate() < p2.getDownloadRate())
-                {
-                    return 1;
-                }
-                else
-                {
-                    return 0;
-                }
-            }
-        };
         randomizer = new Random();
         fieldLock = new Object();
         requestBuffer = new HashSet<>();
@@ -96,6 +80,9 @@ public class ThreadManager {
             unchokeInterval = fp.getUnchokeInterval();
             int numPieces = fp.getNumPieces();
             bitfield = new BitSet(numPieces);
+
+            neighborTaskManager = new NeighborTaskManager(optUnchokeInterval, unchokeInterval, numPrefNeighbors);
+
             // Initialize the piece manager
             PieceManager.setInstance(fp.getNumPieces(), fp.getFileSize(), fp.getPieceSize(), myPid, fp.getFileName());
             // find the index of the peer
@@ -135,16 +122,47 @@ public class ThreadManager {
                         numPieces);
                 streams[i].start();
             }
-            // Spin up timer for choosing preferred neighbors
-            prefNeighborsTimer = new Timer();
-            prefNeighborsTimer.schedule(
-                    new PreferredNeighborsTracker(numPrefNeighbors),
-                    0,
-                    unchokeInterval * 1000);
+            // Spin up tasks via the task manager
+            neighborTaskManager.runTasks();
         }
         catch (Exception e)
         {
             throw e;
+        }
+    }
+
+    /**
+     * This beauty of a method uses the interestedPeers ArrayList to actually store the peers in
+     * conjunction with the interestedPeersIndexMap to traverse the ArrayList in O(1) time if a particular
+     * peer must be located and removed from the list.
+     *
+     * @param stream The PeerStream calling the method
+     * @param isInterested If the PeerStream has switched to interested or not interested
+     */
+    public synchronized void updateInterested(PeerStream stream, boolean isInterested)
+    {
+        if (isInterested)
+        {
+            // If the PeerStream is already in the ArrayList, we don't care about it.
+            if (!interestedPeersIndexMap.containsKey(stream))
+            {
+                interestedPeers.add(stream);
+                interestedPeersIndexMap.put(stream, interestedPeers.size() - 1);
+            }
+        }
+        else
+        {
+            // If the PeerStream is not in the ArrayList, there is nothing to remove.
+            if (interestedPeersIndexMap.containsKey(stream))
+            {
+                // In here, we get the index of the NOTINTERESTED stream, then we get the index
+                // of the last element in the list of interested peers. We swap values then remove
+                // the end of the array for constant time complexity!!!!
+                int index = interestedPeersIndexMap.remove(stream);
+                int lastIndex = interestedPeers.size() - 1;
+                interestedPeers.set(index, interestedPeers.get(lastIndex));
+                interestedPeers.remove(lastIndex);
+            }
         }
     }
 
@@ -166,7 +184,7 @@ public class ThreadManager {
 
     public boolean hasFullFile()
     {
-
+        // TODO: Implement
         return false;
     }
 
@@ -177,16 +195,9 @@ public class ThreadManager {
         }
     }
 
-    public synchronized PriorityQueue<PeerStream> getDownloadQueue()
+    public synchronized ArrayList<PeerStream> getInterestedNeighbors()
     {
-        // Add streams to download queue in order of download speed
-        // TODO: Only send active peers into download queue
-        PriorityQueue<PeerStream> downloadQueue = new PriorityQueue<>(streams.length, comparator);
-        for (int i = 0; i != streams.length; ++i)
-        {
-            downloadQueue.add(streams[i]);
-        }
-        return downloadQueue;
+        return interestedPeers;
     }
 
     public void addPieceIndex(int index)

@@ -34,12 +34,13 @@ public class PeerStream extends Thread {
     private BTLogger btLogger;
     private PieceManager pcManager;
     private ThreadManager threadManager;
-    private boolean chokeRemote = false;
-    private boolean choked = false;
     private long bytesDownloaded;
     private final Object downloadLock;
+    private boolean choked, chokeRemote;
     private boolean receivedInterested = true;
     private boolean running = true;
+    private boolean isOptimUnchokedNeighbor = false;
+    private boolean isPreferredNeighbor = false;
     private int outgoingIndexRequest = -1;
 
     PeerStream(int port, String hostName, int targetPort, String targetHostName,
@@ -348,7 +349,7 @@ public class PeerStream extends Thread {
         sender.notify();
     }
 
-    public synchronized void chokeRemote()
+    private synchronized void chokeRemote()
     {
         chokeRemote = true;
         try {
@@ -373,7 +374,7 @@ public class PeerStream extends Thread {
 
 
 
-    public synchronized void unchokeRemote()
+    private synchronized void unchokeRemote()
     {
         chokeRemote = false;
         try {
@@ -422,5 +423,47 @@ public class PeerStream extends Thread {
         }
     }
 
+    public boolean isOptimUnchokedNeighbor()
+    {
+        return isOptimUnchokedNeighbor;
+    }
+
+    public synchronized void setOptimUnchokedNeighbor(boolean unchoke)
+    {
+        if (unchoke)
+        {
+            if (!isOptimUnchokedNeighbor && !isPreferredNeighbor)
+                unchokeRemote();
+        }
+        else
+        {
+            if (isOptimUnchokedNeighbor && !isPreferredNeighbor)
+                chokeRemote();
+        }
+
+        isOptimUnchokedNeighbor = unchoke;
+    }
+
+    public boolean isPreferredNeighbor()
+    {
+        return isPreferredNeighbor;
+    }
+
+    public synchronized void setPreferredNeighbor(boolean preferred)
+    {
+        if (preferred)
+        {
+            if (!isOptimUnchokedNeighbor && !isPreferredNeighbor)
+            {
+                unchokeRemote();
+            }
+        }
+        else
+        {
+            if (!isOptimUnchokedNeighbor && isPreferredNeighbor)
+                chokeRemote();
+        }
+        isPreferredNeighbor = preferred;
+    }
 
 }
