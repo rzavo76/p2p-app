@@ -237,8 +237,8 @@ public class PeerStream extends Thread {
 
     private void REQUESTReceived(byte[] payload) throws Exception
     {
-        // get random piece index
-        int pieceIndex = threadManager.findRandomPiece(this);
+        // get piece index from the payload
+        int pieceIndex = java.nio.ByteBuffer.wrap(payload).getInt();
         // get piece using index
         byte[] piece = pcManager.readPiece(pieceIndex);
         // package piece index and piece in byte array
