@@ -32,10 +32,12 @@ public class BTLoggerTest {
 			int p4id = 1005;
 			String logString;
 			String logString2;
-			logString = log.TCPConnectTo(p1id, p2id);
-			logString2 = log.TCPConnectFrom(p3id, p4id);
-			log.writeToLog(p1id, logString);
-			log.writeToLog(p3id, logString2);
+			log.setPid(p1id);
+			logString = log.TCPConnectTo(p2id);
+			log.writeToLog(logString);
+			log.setPid(p3id);
+			logString2 = log.TCPConnectFrom(p4id);
+			log.writeToLog(logString2);
 			Assert.assertEquals(logString, readLogAndDelete(p1id) + "\n");
 			Assert.assertEquals(logString2, readLogAndDelete(p3id) + "\n");
         } catch (Exception e) {
@@ -52,11 +54,13 @@ public class BTLoggerTest {
 			String logString;
 			String time;
 			SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
-			logString = log.TCPConnectTo(p1id, p3id);
+			log.setPid(p1id);
+			logString = log.TCPConnectTo(p3id);
 			time = sdf.format(Calendar.getInstance().getTime());
 			Assert.assertEquals(time + ": Peer 1001 makes a connection to Peer 1004.\n", logString);
 			System.out.print(logString);
-			logString = log.TCPConnectFrom(p1id, p4id);
+			log.setPid(p1id);
+			logString = log.TCPConnectFrom(p4id);
 			time = sdf.format(Calendar.getInstance().getTime());
 			Assert.assertEquals(time + ": Peer 1001 is connected from Peer 1005.\n", logString);
 			System.out.print(logString);
@@ -76,12 +80,13 @@ public class BTLoggerTest {
 			SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
 			String logString;
 			String time;
-   			logString = log.changeOfPrefNeighbors(p1id, neighborList);
+			log.setPid(p1id);
+   			logString = log.changeOfPrefNeighbors(neighborList);
    			time = sdf.format(Calendar.getInstance().getTime());
 			Assert.assertEquals(time + ": Peer 1001 has the preferred neighbors 1002, 1004, 1005" 
 				+  ".\n", logString);
    			System.out.print(logString);
-			logString = log.changeOfOUNeighbor(p1id, p2id);    		
+			logString = log.changeOfOUNeighbor(p2id);
 			time = sdf.format(Calendar.getInstance().getTime());
 			Assert.assertEquals(time + ": Peer 1001 has the optimistically unchoked neighbor 1002" 
 				+ ".\n", logString);
@@ -99,11 +104,12 @@ public class BTLoggerTest {
 			SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
 			String logString;
 			String time;
-			logString = log.unchoked(p1id, p2id);
+			log.setPid(p1id);
+			logString = log.unchoked(p2id);
 			time = sdf.format(Calendar.getInstance().getTime());
 			Assert.assertEquals(time + ": Peer 1001 is unchoked by 1002.\n", logString);
 			System.out.print(logString);
-			logString = log.choked(p1id, p2id);
+			logString = log.choked(p2id);
 			time = sdf.format(Calendar.getInstance().getTime());
 			Assert.assertEquals(time + ": Peer 1001 is choked by 1002.\n", logString);
 			System.out.print(logString);
@@ -120,17 +126,18 @@ public class BTLoggerTest {
 			SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
 			String logString;
 			String time;
-			logString = log.receivedHave(p1id, p2id, 4);
+			log.setPid(p1id);
+			logString = log.receivedHave(p2id, 4);
 			time = sdf.format(Calendar.getInstance().getTime());
 			Assert.assertEquals(time + ": Peer 1001 received the 'have' message from 1002 " 
 				+ "for the piece 4.\n", logString);
 			System.out.print(logString);
-			logString = log.receivedInterested(p1id, p2id);
+			logString = log.receivedInterested(p2id);
 			time = sdf.format(Calendar.getInstance().getTime());
 			Assert.assertEquals(time + ": Peer 1001 received the 'interested' message from 1002.\n"
 				, logString);
 			System.out.print(logString);
-			logString = log.receivedNotInterested(p1id, p2id);
+			logString = log.receivedNotInterested(p2id);
 			time = sdf.format(Calendar.getInstance().getTime());
 			Assert.assertEquals(time + ": Peer 1001 received the 'not interested' message from 1002.\n"
 				, logString);
@@ -148,13 +155,14 @@ public class BTLoggerTest {
 			SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
 			String logString;
 			String time;
-			logString = log.downloadedPiece(p1id, 9, p2id, 72);
+			log.setPid(p1id);
+			logString = log.downloadedPiece(9, p2id, 72);
 			time = sdf.format(Calendar.getInstance().getTime());
 			Assert.assertEquals(time + ": Peer 1001 has downloaded the piece 9 from 1002. Now " 
 				+ "the number of pieces it has is 72.\n", logString);
 			System.out.print(logString);
 			Thread.sleep(1000);
-			logString = log.downloadedFile(p1id);
+			logString = log.downloadedFile();
 			time = sdf.format(Calendar.getInstance().getTime());
 			Assert.assertEquals(time + ": Peer 1001 has downloaded the complete file.\n", logString);
 			System.out.print(logString);

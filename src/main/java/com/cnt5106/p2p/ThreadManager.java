@@ -25,7 +25,7 @@ public class ThreadManager {
     private Timer optUnchokeTimer;
     private Comparator<PeerStream> comparator;
 
-
+    private BitSet bitfield;
     private int numPrefNeighbors;
     private long unchokeInterval;
     private long optUnchokeInterval;

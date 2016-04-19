@@ -17,6 +17,8 @@ public class BTLogger
     private static SimpleDateFormat sdf;
     private static BTLogger instance = null;
 
+	private int pid;
+
     private BTLogger() {}
     public static synchronized BTLogger getInstance() 
     {
@@ -28,7 +30,13 @@ public class BTLogger
     	}
     	return instance;
     }
-    public synchronized void  writeToLog(int pid, String logString) throws IOException 
+
+	public void setPid(int pid)
+	{
+		this.pid = pid;
+	}
+
+    public synchronized void  writeToLog(String logString) throws IOException
     {
 		System.out.println("HEY: " + logString);
     	//synchronized file write function
@@ -43,22 +51,22 @@ public class BTLogger
     	toLog.flush();
     	toLog.close();
     }
-	public String socketStarted(int pid, boolean isServer)
+	public String socketStarted(boolean isServer)
 	{
 		return String.format("%s: Peer %d makes a server? %b socket",
 				sdf.format(Calendar.getInstance().getTime()), pid, isServer);
 	}
-	public String TCPConnectTo(int p1id, int p2id) 
+	public String TCPConnectTo(int remote_pid)
 	{
 		return String.format("%s: Peer %d makes a connection to Peer %d.\n",
-			sdf.format(Calendar.getInstance().getTime()), p1id, p2id);
+			sdf.format(Calendar.getInstance().getTime()), pid, remote_pid);
 	}
-	public String TCPConnectFrom(int p1id, int p2id) 
+	public String TCPConnectFrom(int remote_pid)
 	{
 		return String.format("%s: Peer %d is connected from Peer %d.\n",
-			sdf.format(Calendar.getInstance().getTime()), p1id, p2id);
+			sdf.format(Calendar.getInstance().getTime()), pid, remote_pid);
 	}
-	public String changeOfPrefNeighbors(int pid, int[] nid) 
+	public String changeOfPrefNeighbors(int[] nid)
 	{
 		StringBuilder neighborList = new StringBuilder();
 		String delim = "";
@@ -70,44 +78,44 @@ public class BTLogger
 		return String.format("%s: Peer %d has the preferred neighbors %s.\n",
 			sdf.format(Calendar.getInstance().getTime()), pid, neighborList);
 	}
-	public String changeOfOUNeighbor(int pid, int nid) 
+	public String changeOfOUNeighbor(int nid)
 	{
 		return String.format("%s: Peer %d has the optimistically unchoked neighbor "
 			+ "%d.\n", sdf.format(Calendar.getInstance().getTime()), pid, nid);
 	}
-	public String unchoked(int p1id, int p2id) 
+	public String unchoked(int remote_pid)
 	{
 		return String.format("%s: Peer %d is unchoked by %d.\n",
-			sdf.format(Calendar.getInstance().getTime()), p1id, p2id);
+			sdf.format(Calendar.getInstance().getTime()), pid, remote_pid);
 	}
-	public String choked(int p1id, int p2id) 
+	public String choked(int remote_pid)
 	{
 		return String.format("%s: Peer %d is choked by %d.\n",
-			sdf.format(Calendar.getInstance().getTime()), p1id, p2id);
+			sdf.format(Calendar.getInstance().getTime()), pid, remote_pid);
 	}
-	public String receivedHave(int p1id, int p2id, int piece) 
+	public String receivedHave(int remote_pid, int piece)
 	{
 		return String.format("%s: Peer %d received the 'have' message from %d for the "
-			+ "piece %d.\n", sdf.format(Calendar.getInstance().getTime()), p1id, p2id, piece);
+			+ "piece %d.\n", sdf.format(Calendar.getInstance().getTime()), pid, remote_pid, piece);
 	}
-	public String receivedInterested(int p1id, int p2id) 
+	public String receivedInterested(int remote_pid)
 	{
 		return String.format("%s: Peer %d received the 'interested' message from "
-			+ "%d.\n", sdf.format(Calendar.getInstance().getTime()), p1id, p2id);
+			+ "%d.\n", sdf.format(Calendar.getInstance().getTime()), pid, remote_pid);
 	}
-	public String receivedNotInterested(int p1id, int p2id) 
+	public String receivedNotInterested(int remote_pid)
 	{
 		return String.format("%s: Peer %d received the 'not interested' message from "
-			+ "%d.\n", sdf.format(Calendar.getInstance().getTime()), p1id, p2id);
+			+ "%d.\n", sdf.format(Calendar.getInstance().getTime()), pid, remote_pid);
 	}
-	public String downloadedPiece(int p1id, int pieceIndex, 
-		int p2id, int numberPieces) 
+	public String downloadedPiece(int pieceIndex,
+		int remote_pid, int numberPieces)
 	{
 		return String.format("%s: Peer %d has downloaded the piece %d from %d. Now "
 			+ "the number of pieces it has is %d.\n", sdf.format(Calendar.getInstance().getTime()), 
-			p1id, pieceIndex, p2id, numberPieces);
+			pid, pieceIndex, remote_pid, numberPieces);
 	}
-	public String downloadedFile(int pid) 
+	public String downloadedFile()
 	{
 		return String.format("%s: Peer %d has downloaded the complete file.\n",
 			sdf.format(Calendar.getInstance().getTime()), pid);

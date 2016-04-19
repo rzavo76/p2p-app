@@ -74,14 +74,14 @@ public class PeerStream extends Thread {
             if (connector)
             {
                 socket = new Socket(InetAddress.getByName(targetHostName), targetPort, InetAddress.getByName(hostname), port);
-                btLogger.writeToLog(this.peerID, btLogger.socketStarted(this.peerID, !connector));
+                btLogger.writeToLog(btLogger.socketStarted(!connector));
                 sender = new Sender(socket, peerID);
                 sender.start();
             }
             else
             {
                 socket = threadManager.waitForSocket();
-                btLogger.writeToLog(this.peerID, btLogger.socketStarted(this.peerID, !connector));
+                btLogger.writeToLog(btLogger.socketStarted(!connector));
                 sender = new Sender(socket, peerID);
                 sender.start();
             }
@@ -91,7 +91,7 @@ public class PeerStream extends Thread {
             int peerID = msgHandler.readHandshake(bytes);
             if (connector)
             {
-                btLogger.writeToLog(this.peerID, btLogger.TCPConnectTo(this.peerID, peerID));
+                btLogger.writeToLog(btLogger.TCPConnectTo(peerID));
             }
             else
             {
@@ -99,7 +99,7 @@ public class PeerStream extends Thread {
                 {
                     targetPeerID = peerID;
                 }
-                btLogger.writeToLog(this.peerID, btLogger.TCPConnectFrom(this.peerID, peerID));
+                btLogger.writeToLog(btLogger.TCPConnectFrom(peerID));
             }
             // start reading messages
             byte[] lengthBytes = new byte[4];
@@ -177,7 +177,7 @@ public class PeerStream extends Thread {
         catch (Exception e)
         {
             try {
-                BTLogger.getInstance().writeToLog(peerID, Arrays.toString(e.getStackTrace()));
+                BTLogger.getInstance().writeToLog(Arrays.toString(e.getStackTrace()));
             }
             catch (IOException ioe) {
                 e.printStackTrace();
@@ -202,7 +202,7 @@ public class PeerStream extends Thread {
         catch (Exception e)
         {
             try {
-                BTLogger.getInstance().writeToLog(peerID, Arrays.toString(e.getStackTrace()));
+                BTLogger.getInstance().writeToLog(Arrays.toString(e.getStackTrace()));
             }
             catch (IOException ioe) {
                 e.printStackTrace();
@@ -226,7 +226,7 @@ public class PeerStream extends Thread {
         catch (Exception e)
         {
             try {
-                BTLogger.getInstance().writeToLog(peerID, Arrays.toString(e.getStackTrace()));
+                BTLogger.getInstance().writeToLog(Arrays.toString(e.getStackTrace()));
             }
             catch (IOException ioe) {
                 e.printStackTrace();
