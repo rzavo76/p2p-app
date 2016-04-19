@@ -33,6 +33,7 @@ public class PreferredNeighborsTracker extends TimerTask {
             PeerStream prefNeighbor = orderedStreams.poll();
             newPrefIDs[i] = prefNeighbor.getTargetPeerID();
             newPrefs.add(prefNeighbor);
+            prefNeighbor.resetDownloadRate();
         }
         try {
             log.writeToLog(log.changeOfPrefNeighbors(newPrefIDs));
