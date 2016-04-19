@@ -37,7 +37,8 @@ public class PeerStream extends Thread {
     private PieceManager pcManager;
     private ThreadManager threadManager;
     private boolean chokeRemote = false;
-    private int bytesDownloaded;
+    private long bytesDownloaded;
+    private final Object downloadLock;
     private boolean interestingPeer;
     private boolean receivedInterested = true;
     private boolean running = true;
@@ -57,6 +58,8 @@ public class PeerStream extends Thread {
         this.btLogger = BTLogger.getInstance();
         this.pcManager = PieceManager.getInstance();
         this.threadManager = ThreadManager.getInstance();
+        this.bytesDownloaded = 0l;
+        this.downloadLock = new Object();
     }
 
     PeerStream(int port, String hostName, int peerID, int numberOfPieces) throws Exception
@@ -70,6 +73,8 @@ public class PeerStream extends Thread {
         this.btLogger = BTLogger.getInstance();
         this.pcManager = PieceManager.getInstance();
         this.threadManager = ThreadManager.getInstance();
+        this.bytesDownloaded = 0l;
+        this.downloadLock = new Object();
     }
 
     public void run()
@@ -92,7 +97,10 @@ public class PeerStream extends Thread {
             }
             InputStream inStream = socket.getInputStream();
             byte[] bytes = new byte[32];
-            inStream.read(bytes);
+            synchronized (downloadLock)
+            {
+                bytesDownloaded += inStream.read(bytes);
+            }
             int peerID = msgHandler.readHandshake(bytes);
             if (connector)
             {
@@ -113,7 +121,9 @@ public class PeerStream extends Thread {
             {
                 // read length of message
                 byte[] lengthBytes = new byte[4];
-                inStream.read(lengthBytes);
+                synchronized (downloadLock) {
+                    bytesDownloaded += inStream.read(lengthBytes);
+                }
                 // use message length to get type and payload
                 int bytesToRead = java.nio.ByteBuffer.wrap(lengthBytes).getInt();
                 MessageType type = MessageType.getMessageTypeFromByte((byte)inStream.read());
@@ -121,7 +131,9 @@ public class PeerStream extends Thread {
                 if(bytesToRead > 1)
                 {
                     byte[] payload = new byte[bytesToRead - 1];
-                    inStream.read(payload);
+                    synchronized (downloadLock) {
+                        bytesDownloaded += inStream.read(payload);
+                    }
                     actOnReceive(type, payload);
                 }
                 else
@@ -373,7 +385,13 @@ public class PeerStream extends Thread {
 
     public synchronized int getTargetPeerID() { return targetPeerID; }
 
-    public int getDownloadRate() { return bytesDownloaded; }
+    public long getDownloadRate() { return bytesDownloaded; }
+
+    public void resetDownloadRate() {
+        synchronized (downloadLock) {
+            bytesDownloaded = 0;
+        }
+    }
 
     public ArrayList<Integer> getAvailPieces()
     {

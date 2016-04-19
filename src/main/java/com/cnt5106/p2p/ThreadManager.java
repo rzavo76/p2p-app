@@ -161,7 +161,7 @@ public class ThreadManager {
 
     public boolean hasFullFile()
     {
-        // TODO: Implement
+
         return false;
     }
 
@@ -202,8 +202,8 @@ public class ThreadManager {
     {
         // If this value stays at -1, no pieces are desired
         int index = -1;
+        ArrayList<Integer> availPieces = remote.getAvailPieces();
         synchronized (bitfield) {
-            ArrayList<Integer> availPieces = remote.getAvailPieces();
             while (!availPieces.isEmpty()) {
                 int arrayIndex = randomizer.nextInt(availPieces.size());
                 int pieceIndex = availPieces.get(arrayIndex);
