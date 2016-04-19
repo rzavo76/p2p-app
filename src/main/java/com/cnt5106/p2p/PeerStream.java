@@ -287,6 +287,7 @@ public class PeerStream extends Thread {
     private void UNCHOKEReceived() throws Exception
     {
         makeNextRequestOrSendNOTINTERESTED();
+        choked = false;
     }
 
     // TODO: Sort out the peers who are interested and not interested; random selection should be only for those
