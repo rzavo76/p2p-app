@@ -43,10 +43,10 @@ public class Sender extends Thread {
 		catch (Exception e)
 		{
 			try {
-				BTLogger.getInstance().writeToLog(peerID, Arrays.toString(e.getStackTrace()));
+				BTLogger.getInstance().writeToLog(Arrays.toString(e.getStackTrace()));
 			}
 			catch (IOException ioe) {
-				e.printStackTrace();
+				ioe.printStackTrace();
 			}
 		}
 		finally {
@@ -54,7 +54,14 @@ public class Sender extends Thread {
 				socket.close();
 			}
 			catch (Exception e)
-			{}
+			{
+				try {
+					BTLogger.getInstance().writeToLog(Arrays.toString(e.getStackTrace()));
+				}
+				catch (IOException ioe) {
+					e.printStackTrace();
+				}
+			}
 		}
 	}
 
@@ -67,6 +74,7 @@ public class Sender extends Thread {
 
 	public void clearMessages()
 	{
+
 		outgoing.clear();
 	}
 

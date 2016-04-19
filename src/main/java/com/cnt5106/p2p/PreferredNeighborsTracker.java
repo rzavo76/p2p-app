@@ -1,5 +1,6 @@
 package com.cnt5106.p2p;
 
+import java.io.IOException;
 import java.util.*;
 
 /**
@@ -9,7 +10,7 @@ import java.util.*;
  */
 public class PreferredNeighborsTracker extends TimerTask {
 
-    private HashSet<PeerStream> currentNeighbors;
+    private HashSet<PeerStream> currentPrefNeighbors;
     private int numPreferredNeighbors;
 
     public PreferredNeighborsTracker(int numPreferredNeighbors)
@@ -21,20 +22,30 @@ public class PreferredNeighborsTracker extends TimerTask {
     @Override
     public void run()
     {
+        BTLogger log = BTLogger.getInstance();
         ThreadManager tm = ThreadManager.getInstance();
         PriorityQueue<PeerStream> orderedStreams = tm.getDownloadQueue();
         HashSet<PeerStream> newPrefs = new HashSet<>(numPreferredNeighbors);
+
+        int newPrefIDs[] = new int[numPreferredNeighbors];
         for (int i = 0; i != numPreferredNeighbors; ++i)
         {
-            newPrefs.add(orderedStreams.poll());
+            PeerStream prefNeighbor = orderedStreams.poll();
+            newPrefIDs[i] = prefNeighbor.getTargetPeerID();
+            newPrefs.add(prefNeighbor);
         }
-
+        try {
+            log.writeToLog(log.changeOfPrefNeighbors(newPrefIDs));
+        }
+        catch (IOException ioe) {
+            ioe.printStackTrace();
+        }
         for (PeerStream ps : newPrefs)
         {
             // Remove every recurring preferred neighbor; nothing is to be sent to these
-            if (currentNeighbors.contains(ps))
+            if (currentPrefNeighbors.contains(ps))
             {
-                currentNeighbors.remove(ps);
+                currentPrefNeighbors.remove(ps);
             }
             // Every new preferred neighbor must be sent an 'unchoke' message
             else
@@ -43,10 +54,10 @@ public class PreferredNeighborsTracker extends TimerTask {
             }
         }
         // Remaining PeerStreams in old hashset are now communicating with choked neighbors
-        for (PeerStream ps : currentNeighbors)
+        for (PeerStream ps : currentPrefNeighbors)
         {
             ps.chokeRemote();
         }
-        currentNeighbors = newPrefs;
+        currentPrefNeighbors = newPrefs;
     }
 }

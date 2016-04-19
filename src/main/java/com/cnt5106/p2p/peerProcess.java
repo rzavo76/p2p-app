@@ -39,13 +39,14 @@ public class peerProcess {
         // Create two thread arrays to connect with other peers
         // Connect to previously made connections
         int pID = Integer.valueOf(args[0]);
+        BTLogger.getInstance().setPid(pID);
         try 
         {
             ThreadManager.getInstance().createThreads(pID);
         }
         catch(Exception e) {
             try {
-                BTLogger.getInstance().writeToLog(pID, Arrays.toString(e.getStackTrace()));
+                BTLogger.getInstance().writeToLog(Arrays.toString(e.getStackTrace()));
             }
             catch (IOException ioe) {
                 e.printStackTrace();
