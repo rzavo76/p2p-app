@@ -27,6 +27,9 @@ public class ThreadManager {
     private Random randomizer;
 
     private BitSet bitfield;
+    // Technically, the above BitSet can be used as its own lock since it's
+    // only assigned once. For good programming practice, we will add a dedicated final lock
+    private final Object fieldLock;
     private int numPrefNeighbors;
     private long unchokeInterval;
     private long optUnchokeInterval;
@@ -67,6 +70,8 @@ public class ThreadManager {
             }
         };
         randomizer = new Random();
+        fieldLock = new Object();
+        requestBuffer = new HashSet<>();
     }
 
     /**
@@ -186,15 +191,23 @@ public class ThreadManager {
 
     public void addPieceIndex(int index)
     {
-        synchronized (bitfield) {
+        synchronized (fieldLock) {
             bitfield.set(index);
+            requestBuffer.remove(index);
         }
     }
 
     public byte[] getBitField()
     {
-        synchronized (bitfield) {
+        synchronized (fieldLock) {
             return bitfield.toByteArray();
+        }
+    }
+
+    public void handleIncompleteRequest(int index)
+    {
+        synchronized (fieldLock) {
+            requestBuffer.remove(index);
         }
     }
 
@@ -203,7 +216,7 @@ public class ThreadManager {
         // If this value stays at -1, no pieces are desired
         int index = -1;
         ArrayList<Integer> availPieces = remote.getAvailPieces();
-        synchronized (bitfield) {
+        synchronized (fieldLock) {
             while (!availPieces.isEmpty()) {
                 int arrayIndex = randomizer.nextInt(availPieces.size());
                 int pieceIndex = availPieces.get(arrayIndex);
@@ -223,6 +236,7 @@ public class ThreadManager {
                     availPieces.remove(availPieces.size() - 1);
                 } else {
                     index = pieceIndex;
+                    requestBuffer.add(index);
                     break;
                 }
             }

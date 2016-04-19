@@ -5,8 +5,6 @@ import com.cnt5106.p2p.models.MessageType;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.util.*;
@@ -37,10 +35,12 @@ public class PeerStream extends Thread {
     private PieceManager pcManager;
     private ThreadManager threadManager;
     private boolean chokeRemote = false;
+    private boolean choked = false;
     private long bytesDownloaded;
     private final Object downloadLock;
     private boolean receivedInterested = true;
     private boolean running = true;
+    private int outgoingIndexRequest = -1;
 
     PeerStream(int port, String hostName, int targetPort, String targetHostName,
                int peerID, int targetPeerID, int numberOfPieces) throws Exception
@@ -250,6 +250,8 @@ public class PeerStream extends Thread {
     // TODO: 3. Send out another REQUEST message or a NOTINTERESTED if everything is complete
     private void PIECEReceived(byte[] payload) throws Exception
     {
+        // Update outgoing request check so CHOKE doesn't remove piece index from request buffer
+        outgoingIndexRequest = -1;
         // parse payload for piece index and piece
         int pieceIndex = java.nio.ByteBuffer.wrap(Arrays.copyOfRange(payload, 0, 4)).getInt();
         byte[] piece = Arrays.copyOfRange(payload, 4, payload.length);
@@ -265,7 +267,14 @@ public class PeerStream extends Thread {
     // TODO: messages until it receives an UNCHOKE message
     private void CHOKEReceived() throws Exception
     {
-
+		// CHOKE received before PIECE; inform ThreadManager of failed outgoing REQUEST
+        if (outgoingIndexRequest != -1)
+        {
+            threadManager.handleIncompleteRequest(outgoingIndexRequest);
+            outgoingIndexRequest = -1;
+        }
+        // We actually might not ever need to access this variable
+        choked = true;
     }
 
     // TODO: There are two scenarios: We receive an UNCHOKE when we don't actually want anything from
