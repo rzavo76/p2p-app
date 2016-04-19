@@ -55,7 +55,7 @@ public class PeerStream extends Thread {
         this.peerID = peerID;
         this.targetPeerID = targetPeerID;
         this.hostname = hostName;
-        this.availPieces = new ArrayList<>(numberOfPieces);
+        this.availPieces = new ArrayList<Integer>(numberOfPieces);
         this.msgHandler = MessageHandler.getInstance();
         this.btLogger = BTLogger.getInstance();
         this.pcManager = PieceManager.getInstance();
@@ -70,7 +70,7 @@ public class PeerStream extends Thread {
         this.peerID = peerID;
         this.port = port;
         this.hostname = hostName;
-        this.availPieces = new ArrayList<>(numberOfPieces);
+        this.availPieces = new ArrayList<Integer>(numberOfPieces);
         this.msgHandler = MessageHandler.getInstance();
         this.btLogger = BTLogger.getInstance();
         this.pcManager = PieceManager.getInstance();
@@ -172,25 +172,15 @@ public class PeerStream extends Thread {
     {
         switch(type) {
             case HAVE:
-                // TODO: Alert Thread Manager with message: Thread Manager will make it respond interested or not interested,
-                // TODO: and 'interestingPeer' will be updated accordingly
                 HAVEReceived(payload);
                 break;
             case BITFIELD:
-                // TODO: Alert ThreadManager to update local copy of bit field and prompt it to reply with an outgoing
-                // TODO: INTERESTED or NOTINTERESTED message and update 'interestingPeer'
                 BITFIELDReceived(payload);
                 break;
             case REQUEST:
-                // TODO: Retrieve appropriate piece from the PieceManager and send it through the Sender as a PIECE
-                // TODO: message
                 REQUESTReceived(payload);
                 break;
             case PIECE:
-                // TODO: 1. Use Piece Manager to write the payload
-                // TODO: 2. Alert Thread Manager with the new piece so it can update own bit field and send out HAVE
-                // TODO:    through all PeerStreams
-                // TODO: 3. Send out another REQUEST message or a NOTINTERESTED if everything is complete
                 PIECEReceived(payload);
                 break;
             default:
@@ -206,31 +196,21 @@ public class PeerStream extends Thread {
                 CHOKEReceived();
                 break;
             case UNCHOKE:
-                // TODO: There are two scenarios: We receive an UNCHOKE when we don't actually want anything from
-                // TODO: this peer, or we still want something.
-                // TODO: Former case:   I can't see this happening unless the NOTINTERESTED message is still in
-                // TODO:                transit. It's probably safest to send another NOTINTERESTED message.
-                // TODO: Latter case:   Send out a REQUEST message for a random piece by alerting ThreadManager,
-                // TODO:                who will synchronously choose a random required piece that matches with
-                // TODO:                this peer's bit field
+                UNCHOKEReceived();
                 break;
             case INTERESTED:
-                // TODO: Sort out the peers who are interested and not interested; random selection should be only for those
-                // TODO: who are interested. ThreadManager has to maintain the mutable list. Has to check for interested
-                // TODO: as well in case the peer was not previously interested. Update: see below
+                INTERESTEDReceived();
                 break;
             case NOTINTERESTED:
-                // TODO: Same as above; locally track previous declaration of 'ifInterested' though. If it is a duplicate
-                // TODO: message, there is no need to alert the ThreadManager.
-                // TODO: Additionally, if this peer has a full file, it can shut off its connection with the neighbor
-                // TODO: permanently. This is how the entire process will close out.
+                NOTINTERESTEDReceived();
                 break;
             default:
-                // error
-                break;
+                throw new Exception("Incorrect message type");
         }
     }
 
+    // TODO: Alert Thread Manager with message: Thread Manager will make it respond interested or not interested,
+    // TODO: and 'interestingPeer' will be updated accordingly
     private void HAVEReceived(byte[] payload) throws Exception
     {
         //get index of piece they have
@@ -241,6 +221,8 @@ public class PeerStream extends Thread {
         needPiece();
     }
 
+    // TODO: Alert ThreadManager to update local copy of bit field and prompt it to reply with an outgoing
+    // TODO: INTERESTED or NOTINTERESTED message and update 'interestingPeer'
     private void BITFIELDReceived(byte[] payload) throws Exception
     {
         // assign pieces
@@ -249,6 +231,8 @@ public class PeerStream extends Thread {
         needPiece();
     }
 
+    // TODO: Retrieve appropriate piece from the PieceManager and send it through the Sender as a PIECE
+    // TODO: message
     private void REQUESTReceived(byte[] payload) throws Exception
     {
         // get piece index from the payload
@@ -263,6 +247,10 @@ public class PeerStream extends Thread {
         outputByteArray(msgHandler.makeMessage(PIECE, message.array())); // request piece
     }
 
+    // TODO: 1. Use Piece Manager to write the payload
+    // TODO: 2. Alert Thread Manager with the new piece so it can update own bit field and send out HAVE
+    // TODO:    through all PeerStreams
+    // TODO: 3. Send out another REQUEST message or a NOTINTERESTED if everything is complete
     private void PIECEReceived(byte[] payload) throws Exception
     {
         // Update outgoing request check so CHOKE doesn't remove piece index from request buffer
@@ -278,6 +266,7 @@ public class PeerStream extends Thread {
         outgoingIndexRequest = threadManager.getRandomAvailablePieceIndex(this);
         if (outgoingIndexRequest != -1)
         {
+            interestingPeer = true;
             // send request message
             // get random pieceIndex
             // package piece index in byte array
@@ -288,14 +277,17 @@ public class PeerStream extends Thread {
         }
         else
         {
+            interestingPeer = false;
             // send not interested message
             outputByteArray(msgHandler.makeMessage(NOTINTERESTED));
         }
     }
 
-    private void CHOKEReceived()
+    // TODO: Handle by telling the sender to not send anything except INTERESTED or NOTINTERESTED
+    // TODO: messages until it receives an UNCHOKE message
+    private void CHOKEReceived() throws Exception
     {
-        // CHOKE received before PIECE; inform ThreadManager of failed outgoing REQUEST
+		// CHOKE received before PIECE; inform ThreadManager of failed outgoing REQUEST
         if (outgoingIndexRequest != -1)
         {
             threadManager.handleIncompleteRequest(outgoingIndexRequest);
@@ -303,6 +295,59 @@ public class PeerStream extends Thread {
         }
         // We actually might not ever need to access this variable
         choked = true;
+    }
+
+    // TODO: There are two scenarios: We receive an UNCHOKE when we don't actually want anything from
+    // TODO: this peer, or we still want something.
+    // TODO: Former case:   I can't see this happening unless the NOTINTERESTED message is still in
+    // TODO:                transit. It's probably safest to send another NOTINTERESTED message.
+    // TODO: Latter case:   Send out a REQUEST message for a random piece by alerting ThreadManager,
+    // TODO:                who will synchronously choose a random required piece that matches with
+    // TODO:                this peer's bit field
+    private void UNCHOKEReceived() throws Exception
+    {
+
+    }
+
+    // TODO: Sort out the peers who are interested and not interested; random selection should be only for those
+    // TODO: who are interested. ThreadManager has to maintain the mutable list. Has to check for interested
+    // TODO: as well in case the peer was not previously interested. Update: see below
+    private void INTERESTEDReceived() throws Exception
+    {
+        receivedInterested = true;
+    }
+
+    // TODO: Same as above; locally track previous declaration of 'ifInterested' though. If it is a duplicate
+    // TODO: message, there is no need to alert the ThreadManager.
+    // TODO: Additionally, if this peer has a full file, it can shut off its connection with the neighbor
+    // TODO: permanently. This is how the entire process will close out.
+    private void NOTINTERESTEDReceived() throws Exception
+    {
+        receivedInterested = false;
+    }
+
+
+    public void needPiece() throws Exception
+    {
+        // TODO: You can use getRandomPiece for this one too but then it will add it to the request buffer
+        boolean interested = threadManager.needPiece(this); // Asks the threadmanager whether we need a piece
+        // update peer with the status of interested
+        if(interested)
+        {
+            interestingPeer = true;
+            outputByteArray(msgHandler.makeMessage(INTERESTED));
+        }
+        else
+        {
+            interestingPeer = false;
+            outputByteArray(msgHandler.makeMessage(NOTINTERESTED));
+        }
+    }
+
+    public void closeSender()
+    {
+        sender.close();
+        sender.notify();
     }
 
     public synchronized void chokeRemote()
@@ -329,27 +374,6 @@ public class PeerStream extends Thread {
     }
 
 
-    public void closeSender()
-    {
-        sender.close();
-        sender.notify();
-    }
-
-    public void needPiece() throws Exception
-    {
-
-        // TODO: You can use getRandomPiece for this one too but then it will add it to the request buffer
-        boolean interested = threadManager.needPiece(this); // Asks the threadmanager whether we need a piece
-        // update peer with the status of interested
-        if(interested)
-        {
-            outputByteArray(msgHandler.makeMessage(INTERESTED));
-        }
-        else
-        {
-            outputByteArray(msgHandler.makeMessage(NOTINTERESTED));
-        }
-    }
 
     public synchronized void unchokeRemote()
     {
@@ -368,6 +392,7 @@ public class PeerStream extends Thread {
         }
     }
 
+    public boolean peerStreamRunning() { return running; }
 
     public synchronized int getTargetPeerID() { return targetPeerID; }
 
@@ -388,8 +413,6 @@ public class PeerStream extends Thread {
     {
         availPieces = array;
     }
-
-    public boolean peerStreamRunning() { return running; }
 
     // Helper method for initial bitfield construction
     private void setPiecesWithBitfield(BitSet bitSet)
