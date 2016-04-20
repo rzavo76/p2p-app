@@ -65,23 +65,30 @@ public class PieceManager {
 
     public void splitFile() throws Exception
     {
-        // read bytes into an array
+        // read bytes of the file into an array
         Path fPath = FileSystems.getDefault().getPath(filename);
         byte[] allPieces = Files.readAllBytes(fPath);
-        Files.delete(fPath);
-        // make directory peer_pID
+        // change path to the directory
         fPath = FileSystems.getDefault().getPath("peer_" + pID);
-        Files.createDirectories(fPath);
         // split filename into pieces inside the directory
         for(int pieceIndex = 0; pieceIndex < numberOfPieces; ++pieceIndex) //iterate through files
         {
             int start = pieceIndex*pieceSize;
             // assign correct last byte index if at the last piece
             int end = (pieceIndex != (numberOfPieces - 1)) ? ((pieceIndex + 1)*pieceSize - 1) : (fileSize - start - 1);
-            Files.write(fPath.resolve(pieceIndex + "_" + filename),
+            // write piece
+            Files.write(fPath.resolve("/" + pieceIndex + "_" + filename),
                     Arrays.copyOfRange(allPieces, start, end));
         }
     }
+
+    public void makeFolder() throws Exception
+    {
+        // make directory peer_pID
+        Path fPath = FileSystems.getDefault().getPath("peer_" + pID);
+        Files.createDirectories(fPath);
+    }
+
     public synchronized void writePiece(byte[] piece, int pieceIndex) throws Exception
     {
         // write byte array piece into peer_pID/filename_pieceIndex.dat

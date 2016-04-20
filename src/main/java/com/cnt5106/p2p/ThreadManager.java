@@ -96,11 +96,10 @@ public class ThreadManager {
                 }
             }
 
-            // make directory to hold pieces
-
+            // make folder to hold pieces
+            pcManager.makeFolder();
             // split file if you have it
             if(myPeerInfo.hasFile) {
-                //TODO: move directory creation functionality outside of splitFile()
                 pcManager.splitFile();
             }
 
