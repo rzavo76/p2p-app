@@ -78,17 +78,21 @@ class OptimisicallyUnchokeTracker extends TimerTask {
         HashSet<PeerStream> prefNeighbors;
         synchronized (manager) {
             prefNeighbors = manager.getPrefNeighbors();
+
             ArrayList<PeerStream> interested = ThreadManager.getInstance().getInterestedNeighbors();
-            for (int i = 0; i < interested.size(); ++i) {
+            ArrayList<PeerStream> copyInterest = new ArrayList<>(interested.size());
+            for (PeerStream ps : interested)
+                copyInterest.add(ps);
+            for (int i = 0; i < copyInterest.size(); ++i) {
                 // Prune the list of interested PeerStreams so no Preferred Neighbors remain
-                if (prefNeighbors.contains(interested.get(i))) {
+                if (prefNeighbors.contains(copyInterest.get(i))) {
                     int lastIndex = prefNeighbors.size() - 1;
-                    interested.set(i, interested.get(lastIndex));
-                    interested.remove(lastIndex);
+                    copyInterest.set(i, copyInterest.get(lastIndex));
+                    copyInterest.remove(lastIndex);
                 }
             }
             // No optimistic neighbors
-            if (interested.isEmpty()) {
+            if (copyInterest.isEmpty()) {
                 // If the previous optimistically unchoked neighbor is not in preferred neighbors, choke 'em!
                 // Not sure how this works with an empty interested list, I don't THINK this can ever happen but not sure
                 if (current != null)
@@ -97,8 +101,8 @@ class OptimisicallyUnchokeTracker extends TimerTask {
                     current = null;
                 }
             } else {
-                int index = randomizer.nextInt(interested.size());
-                PeerStream next = interested.get(index);
+                int index = randomizer.nextInt(copyInterest.size());
+                PeerStream next = copyInterest.get(index);
                 if (current != next)
                 {
                     if (current != null)
