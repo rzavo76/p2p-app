@@ -166,6 +166,8 @@ public class PeerStream extends Thread {
             }
             closeSender();
             socket.close();
+            threadManager.streamFinished();
+            threadManager.isDone();
         }
         catch (Exception e)
         {
@@ -441,6 +443,8 @@ public class PeerStream extends Thread {
     }
 
     public void done() { this.done = true; }
+
+    public boolean isDone() { return done; }
 
     public synchronized int getTargetPeerID() { return targetPeerID; }
 

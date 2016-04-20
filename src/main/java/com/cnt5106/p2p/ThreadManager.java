@@ -25,6 +25,7 @@ public class ThreadManager {
     private int totalPieces;
     private PieceManager pcManager;
     private SocketListener listener = null;
+    private int streamsDone = 0;
 
     private BitSet bitfield;
     private boolean hasFullFile = false;
@@ -187,35 +188,37 @@ public class ThreadManager {
             }
             if (hasFullFile)
             {
-                boolean terminate = true;
                 for (PeerStream peer : streams)
                 {
                     if(peer.hasFullFile())
                     {
                         peer.done();
                     }
-                    else
-                    {
-                        terminate = false;
-                    }
-                }
-                if(terminate)
-                {
-                    try {
-                        PieceManager.getInstance().mergePieces();
-                    }
-                    catch(Exception e) {
-                        try {
-                            BTLogger.getInstance().writeToLog(Arrays.toString(e.getStackTrace()));
-                        }
-                        catch (IOException ioe) {
-                            e.printStackTrace();
-                        }
-                    }
                 }
             }
         }
         return hasFullFile;
+    }
+
+    public synchronized void isDone() {
+        if(streamsDone == streams.length) {
+            try {
+                PieceManager.getInstance().mergePieces();
+            }
+            catch(Exception e) {
+                try {
+                    BTLogger.getInstance().writeToLog(Arrays.toString(e.getStackTrace()));
+                }
+                catch (IOException ioe) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    public void streamFinished()
+    {
+        ++streamsDone;
     }
 
     public int currentPieces()
