@@ -157,6 +157,7 @@ public class PeerStream extends Thread {
                     bytesDownloaded += inStream.read(contents);
                 }
                 MessageType type = MessageType.getMessageTypeFromByte(contents[0]);
+                //btLogger.writeToLog(type.getValue() + " is received.\n");
                 // Choose what to do based on the message payload and type
                 if(bytesToRead > 1)
                 {
@@ -168,6 +169,7 @@ public class PeerStream extends Thread {
                     actOnReceive(type);
                 }
             }
+            btLogger.writeToLog("PAIR IS DOOOOOONNNNNNEEEEEEEE\n");
             closeSender();
             socket.close();
             threadManager.streamFinished();
@@ -264,6 +266,7 @@ public class PeerStream extends Thread {
     {
         // get piece index from the payload
         int pieceIndex = java.nio.ByteBuffer.wrap(payload).getInt();
+        btLogger.writeToLog(pieceIndex + " is being requested.\n");
         // get piece using index
         byte[] piece = pcManager.readPiece(pieceIndex);
         // package piece index and piece in byte array
@@ -291,7 +294,7 @@ public class PeerStream extends Thread {
         // update bitfield
         threadManager.addPieceIndex(pieceIndex);
         // send out global have message
-        threadManager.broadcastHaveMessage(msgHandler.makeMessage(HAVE, byteArrayPieceIndex));
+        //threadManager.broadcastHaveMessage(msgHandler.makeMessage(HAVE, byteArrayPieceIndex));
         // log the piece message
         btLogger.writeToLog(btLogger.downloadedPiece(pieceIndex, targetPeerID, threadManager.currentPieces()));
         // see whether peer needs a piece from the bitfield
@@ -355,11 +358,13 @@ public class PeerStream extends Thread {
             threadManager.updateInterested(this, false);
         }
         receivedInterested = false;
+        threadManager.hasFullFile();
     }
 
     private void makeNextREQUESTOrSendNOTINTERESTED() throws Exception
     {
         int pieceIndex = threadManager.getRandomAvailablePieceIndex(this);
+        btLogger.writeToLog(pieceIndex + " is being requested.\n");
         if (pieceIndex != -1)
         {
             // send request message
@@ -380,9 +385,8 @@ public class PeerStream extends Thread {
     public void sendINTERESTEDorNOT() throws Exception
     {
         // TODO: You can use getRandomPiece for this one too but then it will add it to the request buffer
-        int index = threadManager.findPieceIndex(this); // Asks the threadmanager whether we need a piece
         // update peer with the status of interested
-        if (index != -1)
+        if (threadManager.areInterested(this))
         {
             outputByteArray(msgHandler.makeMessage(INTERESTED));
         }

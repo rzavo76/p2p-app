@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.lang.*;
 import java.net.Socket;
 import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.Queue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -15,7 +17,7 @@ public class Sender extends Thread {
 	private Socket socket;
 	private MessageHandler msgHandler;
 	private int peerID;
-	private BlockingQueue<byte[]> outgoing;
+	private Queue<byte[]> outgoing;
 	private boolean running = true;
 
 	public final Object mutex;
@@ -25,7 +27,7 @@ public class Sender extends Thread {
 		this.socket = socket;
 		this.peerID = peerID;
 		msgHandler = MessageHandler.getInstance();
-		outgoing = new LinkedBlockingQueue<>();
+		outgoing = new LinkedList<byte[]>();
 		mutex = new Object();
 	}
 

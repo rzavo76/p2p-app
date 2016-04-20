@@ -83,7 +83,7 @@ public class ThreadManager {
             neighborTaskManager = new NeighborTaskManager(fp.getOptUnchokeInterval(), fp.getUnchokeInterval(), numPrefNeighbors);
 
             // Initialize the piece manager
-            PieceManager.setInstance(fp.getNumPieces(), fp.getFileSize(), fp.getPieceSize(), myPid, fp.getFileName());
+            PieceManager.setInstance(totalPieces, fp.getFileSize(), fp.getPieceSize(), myPid, fp.getFileName());
             pcManager = PieceManager.getInstance();
 
             // find the index of the peer
@@ -193,7 +193,7 @@ public class ThreadManager {
         }
     }
 
-    public boolean hasFullFile()
+    public synchronized boolean hasFullFile()
     {
         if (!hasFullFile) {
             synchronized (fieldLock) {
@@ -239,7 +239,7 @@ public class ThreadManager {
         return bitfield.cardinality();
     }
 
-    public synchronized void broadcastHaveMessage(byte[] message) {
+    public void broadcastHaveMessage(byte[] message) {
         for (PeerStream ps : streams)
         {
             if(ps.isReadyForHave()) {
@@ -321,5 +321,20 @@ public class ThreadManager {
         }
         remote.setAvailPieces(availPieces);
         return index;
+    }
+
+    public boolean areInterested(PeerStream remote) {
+        ArrayList<Integer> availPieces = remote.getAvailPieces();
+        synchronized (fieldLock) {
+            for(int i = 0; i < availPieces.size(); ++i) {
+                if(bitfield.get(i)) {
+                    availPieces.remove(i);
+                }
+                else {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }
