@@ -115,12 +115,13 @@ public class ThreadManager {
                         myPeerInfo.peerId,
                         totalPieces);
             }
-            // connect to every peer that connected before
+            // start SocketListener to listen for connections and assign to streams
             if(thisIndex < numPeers)
             {
                 listener = new SocketListener(myPeerInfo.peerPort, thisIndex, streams);
                 listener.start();
             }
+            // connect to every peer before this one in the file
             for (int i = 0; i != thisIndex; ++i)
             {
                 RemotePeerInfo rpi = peers.get(i);
@@ -134,7 +135,6 @@ public class ThreadManager {
                         totalPieces);
                 streams[i].start();
             }
-
             // Spin up tasks via the task manager
             neighborTaskManager.runTasks();
         }
@@ -179,7 +179,7 @@ public class ThreadManager {
         }
     }
 
-    public boolean hasFullFile() throws Exception
+    public boolean hasFullFile()
     {
         if (!hasFullFile) {
             synchronized (fieldLock) {
@@ -201,7 +201,7 @@ public class ThreadManager {
                 }
                 if(terminate)
                 {
-                    PieceManager.getInstance().mergePieces();
+                    //PieceManager.getInstance().mergePieces();
                 }
             }
         }

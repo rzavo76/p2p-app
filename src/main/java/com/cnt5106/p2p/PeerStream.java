@@ -95,7 +95,7 @@ public class PeerStream extends Thread {
                     {
                         //attempt to connect to socket
                         socket = new Socket(targetHostName, port);
-                        scanning=false;
+                        scanning = false;
                     }
                     catch(Exception e)
                     {
@@ -108,22 +108,23 @@ public class PeerStream extends Thread {
                         }
                     }
                 }
+                // we connected to the ServerSocket on a different peer!
                 sender = new Sender(socket, peerID);
                 sender.start();
             }
             else
             {
-                //socket is open and ready
+                // ServerSocket on this peer received a connection!
                 sender = new Sender(socket, peerID);
                 sender.start();
             }
             InputStream inStream = socket.getInputStream();
-            byte[] bytes = new byte[32];
+            byte[] handshake = new byte[32];
             synchronized (downloadLock)
             {
-                bytesDownloaded += inStream.read(bytes);
+                bytesDownloaded += inStream.read(handshake);
             }
-            int peerID = msgHandler.readHandshake(bytes);
+            int peerID = msgHandler.readHandshake(handshake);
             if (connector)
             {
                 btLogger.writeToLog(btLogger.TCPConnectTo(peerID));
