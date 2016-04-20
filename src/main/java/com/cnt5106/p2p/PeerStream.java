@@ -295,7 +295,7 @@ public class PeerStream extends Thread {
     {
         if(!receivedInterested)
         {
-            //threadManager.updateInterested(this, true);
+            threadManager.updateInterested(this, true);
         }
         receivedInterested = true;
 
@@ -309,7 +309,7 @@ public class PeerStream extends Thread {
     {
         if(receivedInterested)
         {
-            //threadManager.updateInterested(this, false);
+            threadManager.updateInterested(this, false);
         }
         receivedInterested = false;
         // do nothing and wait for next have message to be sent to the peer
