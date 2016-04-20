@@ -18,12 +18,15 @@ public class Sender extends Thread {
 	private BlockingQueue<byte[]> outgoing;
 	private boolean running = true;
 
+	public final Object mutex;
+
 	Sender(Socket socket, int peerID)
 	{
 		this.socket = socket;
 		this.peerID = peerID;
 		msgHandler = MessageHandler.getInstance();
 		outgoing = new LinkedBlockingQueue<>();
+		mutex = new Object();
 	}
 
 	public void run()
@@ -31,13 +34,15 @@ public class Sender extends Thread {
 		try {
 			byte[] handshake = msgHandler.makeHandshake(peerID);
 			socket.getOutputStream().write(handshake);
-			while(true) {
-				wait();
-				if(!running) {
-					break;
+			synchronized(mutex) {
+				while(true) {
+					mutex.wait();
+					if(!running) {
+						return;
+					}
+					byte[] next = outgoing.remove();
+					socket.getOutputStream().write(next);
 				}
-				byte[] next = outgoing.remove();
-				socket.getOutputStream().write(next);
 			}
 		}
 		catch (Exception e)
@@ -47,20 +52,6 @@ public class Sender extends Thread {
 			}
 			catch (IOException ioe) {
 				ioe.printStackTrace();
-			}
-		}
-		finally {
-			try {
-				socket.close();
-			}
-			catch (Exception e)
-			{
-				try {
-					BTLogger.getInstance().writeToLog(Arrays.toString(e.getStackTrace()));
-				}
-				catch (IOException ioe) {
-					e.printStackTrace();
-				}
 			}
 		}
 	}
@@ -78,7 +69,5 @@ public class Sender extends Thread {
 		outgoing.clear();
 	}
 
-	public void close() {
-		this.running = false;
-	}
+	public void close() { this.running = false; }
 }
