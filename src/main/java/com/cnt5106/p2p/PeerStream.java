@@ -36,6 +36,7 @@ public class PeerStream extends Thread {
     private ThreadManager threadManager;
     private long bytesDownloaded;
     private final Object downloadLock;
+    private final Object queueLock;
     private boolean receivedInterested = false;
     private boolean readyForHave = false;
     private boolean readyToSend = false;
@@ -65,6 +66,7 @@ public class PeerStream extends Thread {
         this.threadManager = ThreadManager.getInstance();
         this.bytesDownloaded = 0l;
         this.downloadLock = new Object();
+        this.queueLock = new Object();
     }
 
     PeerStream(int port, String hostName, int peerID, int numberOfPieces) throws Exception
@@ -82,6 +84,7 @@ public class PeerStream extends Thread {
         this.threadManager = ThreadManager.getInstance();
         this.bytesDownloaded = 0l;
         this.downloadLock = new Object();
+        this.queueLock = new Object();
     }
 
     public void run()
@@ -157,7 +160,6 @@ public class PeerStream extends Thread {
                     bytesDownloaded += inStream.read(contents);
                 }
                 MessageType type = MessageType.getMessageTypeFromByte(contents[0]);
-                //btLogger.writeToLog(type.getValue() + " is received.\n");
                 // Choose what to do based on the message payload and type
                 if(bytesToRead > 1)
                 {
@@ -169,7 +171,6 @@ public class PeerStream extends Thread {
                     actOnReceive(type);
                 }
             }
-            btLogger.writeToLog("PAIR IS DOOOOOONNNNNNEEEEEEEE\n");
             closeSender();
             socket.close();
             threadManager.streamFinished();
@@ -246,6 +247,7 @@ public class PeerStream extends Thread {
         availPieces.add(pieceIndex);
         pieces.set(pieceIndex);
         checkFullFile();
+        threadManager.hasFullFile();
         // does the peer need anything? - outputs interested or not interested to connected peer
         sendINTERESTEDorNOT();
     }
@@ -266,7 +268,6 @@ public class PeerStream extends Thread {
     {
         // get piece index from the payload
         int pieceIndex = java.nio.ByteBuffer.wrap(payload).getInt();
-        btLogger.writeToLog(pieceIndex + " is being requested.\n");
         // get piece using index
         byte[] piece = pcManager.readPiece(pieceIndex);
         // package piece index and piece in byte array
@@ -299,6 +300,7 @@ public class PeerStream extends Thread {
         btLogger.writeToLog(btLogger.downloadedPiece(pieceIndex, targetPeerID, threadManager.currentPieces()));
         // see whether peer needs a piece from the bitfield
         makeNextREQUESTOrSendNOTINTERESTED();
+        checkFullFile();
         if(threadManager.hasFullFile())
         {
             btLogger.writeToLog(btLogger.downloadedFile());
@@ -358,13 +360,13 @@ public class PeerStream extends Thread {
             threadManager.updateInterested(this, false);
         }
         receivedInterested = false;
+        checkFullFile();
         threadManager.hasFullFile();
     }
 
     private void makeNextREQUESTOrSendNOTINTERESTED() throws Exception
     {
         int pieceIndex = threadManager.getRandomAvailablePieceIndex(this);
-        btLogger.writeToLog(pieceIndex + " is being requested.\n");
         if (pieceIndex != -1)
         {
             // send request message
@@ -421,7 +423,7 @@ public class PeerStream extends Thread {
         }
     }
 
-    public void outputByteArray(byte[] message)
+    public synchronized void outputByteArray(byte[] message)
     {
         synchronized(sender.mutex) {
             sender.queueMessage(message);

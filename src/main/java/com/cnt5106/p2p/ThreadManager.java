@@ -239,11 +239,14 @@ public class ThreadManager {
         return bitfield.cardinality();
     }
 
-    public void broadcastHaveMessage(byte[] message) {
+    public synchronized void broadcastHaveMessage(byte[] message) {
         for (PeerStream ps : streams)
         {
             if(ps.isReadyForHave()) {
-                ps.outputByteArray(message);
+                synchronized(ps.sender.mutex) {
+                    ps.sender.queueMessage(message);
+                    ps.sender.mutex.notify();
+                }
             }
         }
     }
