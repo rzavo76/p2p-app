@@ -6,14 +6,9 @@ package com.cnt5106.p2p;
  * A model class for containing information about peers
  */
 
-
-
-import com.cnt5106.p2p.models.RemotePeerInfo;
-
 import java.io.IOException;
 import java.util.*;
 import java.lang.*;
-import java.nio.file.FileSystems;
 
 public class peerProcess {
 
