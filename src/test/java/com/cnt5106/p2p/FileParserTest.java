@@ -10,8 +10,8 @@ import java.util.ArrayList;
 
 public class FileParserTest
 {
-    private final static String FILE_NAME   = "TheFile.dat";
-    private final static String TEST_DIR    = "src/test/java/com/cnt5106/p2p/";
+    private final static String FILE_NAME   = "mein_kampf.dat";
+    private final static String TEST_DIR    = "";
     FileParser fileParser = FileParser.getInstance();
     @Test
     public void parsesConfigFile()
