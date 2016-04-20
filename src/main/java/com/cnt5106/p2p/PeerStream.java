@@ -140,7 +140,7 @@ public class PeerStream extends Thread {
             // send out bit field
             outputByteArray(msgHandler.makeMessage(BITFIELD, threadManager.getBitField()));
             // start reading messages
-            while(true)
+            while(!done)
             {
                 // read length of message
                 byte[] lengthBytes = new byte[4];
@@ -162,9 +162,6 @@ public class PeerStream extends Thread {
                 else
                 {
                     actOnReceive(type);
-                }
-                if(done) {
-                    break;
                 }
             }
             closeSender();
