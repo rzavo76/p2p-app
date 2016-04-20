@@ -27,6 +27,9 @@ public class PeerStream extends Thread {
     private String hostname, targetHostName;
     private int peerID, targetPeerID;
     private ArrayList<Integer> availPieces;
+    private BitSet pieces;
+    private int totalPieces;
+    private boolean isFull = false;
     private Socket socket;
     private Sender sender;
     private MessageHandler msgHandler;
@@ -36,7 +39,6 @@ public class PeerStream extends Thread {
     private ThreadManager threadManager;
     private long bytesDownloaded;
     private final Object downloadLock;
-    private boolean choked, chokeRemote;
     private boolean receivedInterested = true;
     private boolean running = true;
     private boolean isOptimUnchokedNeighbor = false;
@@ -53,7 +55,9 @@ public class PeerStream extends Thread {
         this.peerID = peerID;
         this.targetPeerID = targetPeerID;
         this.hostname = hostName;
-        this.availPieces = new ArrayList<Integer>(numberOfPieces);
+        this.availPieces = new ArrayList<>(numberOfPieces);
+        this.pieces = new BitSet(numberOfPieces);
+        this.totalPieces = numberOfPieces;
         this.msgHandler = MessageHandler.getInstance();
         this.btLogger = BTLogger.getInstance();
         this.pcManager = PieceManager.getInstance();
@@ -68,7 +72,9 @@ public class PeerStream extends Thread {
         this.peerID = peerID;
         this.port = port;
         this.hostname = hostName;
-        this.availPieces = new ArrayList<Integer>(numberOfPieces);
+        this.availPieces = new ArrayList<>(numberOfPieces);
+        this.pieces = new BitSet(numberOfPieces);
+        this.totalPieces = numberOfPieces;
         this.msgHandler = MessageHandler.getInstance();
         this.btLogger = BTLogger.getInstance();
         this.pcManager = PieceManager.getInstance();
@@ -215,8 +221,10 @@ public class PeerStream extends Thread {
         int pieceIndex = java.nio.ByteBuffer.wrap(payload).getInt();
         // update bitfield with index
         availPieces.add(pieceIndex);
+        pieces.set(pieceIndex);
+        checkFullFile();
         // does the peer need anything? - outputs interested or not interested to connected peer
-        needPiece();
+        sendINTERESTEDorNOT();
     }
 
     // TODO: Alert ThreadManager to update local copy of bit field and prompt it to reply with an outgoing
@@ -226,7 +234,7 @@ public class PeerStream extends Thread {
         // assign pieces
         setPiecesWithBitfield(BitSet.valueOf(payload));
         // does the peer need anything? - outputs interested or not interested to connected peer
-        needPiece();
+        sendINTERESTEDorNOT();
     }
 
     // TODO: Retrieve appropriate piece from the PieceManager and send it through the Sender as a PIECE
@@ -274,8 +282,6 @@ public class PeerStream extends Thread {
             threadManager.handleIncompleteRequest(outgoingIndexRequest);
             outgoingIndexRequest = -1;
         }
-        // We actually might not ever need to access this variable
-        choked = true;
     }
 
     // TODO: There are two scenarios: We receive an UNCHOKE when we don't actually want anything from
@@ -288,7 +294,6 @@ public class PeerStream extends Thread {
     private void UNCHOKEReceived() throws Exception
     {
         makeNextREQUESTOrSendNOTINTERESTED();
-        choked = false;
     }
 
     // TODO: Sort out the peers who are interested and not interested; random selection should be only for those
@@ -338,12 +343,12 @@ public class PeerStream extends Thread {
         }
     }
 
-    public void needPiece() throws Exception
+    public void sendINTERESTEDorNOT() throws Exception
     {
         // TODO: You can use getRandomPiece for this one too but then it will add it to the request buffer
-        boolean interested = threadManager.needPiece(this); // Asks the threadmanager whether we need a piece
+        int index = threadManager.findPieceIndex(this); // Asks the threadmanager whether we need a piece
         // update peer with the status of interested
-        if(interested)
+        if (index != -1)
         {
             outputByteArray(msgHandler.makeMessage(INTERESTED));
         }
@@ -361,7 +366,6 @@ public class PeerStream extends Thread {
 
     private synchronized void chokeRemote()
     {
-        chokeRemote = true;
         try {
             sender.clearMessages();
             sender.queueMessage(msgHandler.makeMessage(MessageType.CHOKE));
@@ -382,11 +386,13 @@ public class PeerStream extends Thread {
         sender.queueMessage(message);
     }
 
-
+    private void checkFullFile()
+        if (pieces.cardinality() == totalPieces)
+            isFull = true;
+    }
 
     private synchronized void unchokeRemote()
     {
-        chokeRemote = false;
         try {
             sender.queueMessage(msgHandler.makeMessage(MessageType.UNCHOKE));
         }
@@ -426,11 +432,13 @@ public class PeerStream extends Thread {
     // Helper method for initial bitfield construction
     private void setPiecesWithBitfield(BitSet bitSet)
     {
+        pieces = bitSet;
         for (int i = 0; i != bitSet.size(); ++i)
         {
             if (bitSet.get(i))
                 availPieces.add(i);
         }
+        checkFullFile();
     }
 
     public boolean isOptimUnchokedNeighbor()

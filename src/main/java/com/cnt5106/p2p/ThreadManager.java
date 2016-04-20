@@ -25,7 +25,7 @@ public class ThreadManager {
     private HashMap<PeerStream, Integer> interestedPeersIndexMap;
     private Random randomizer;
     private NeighborTaskManager neighborTaskManager;
-
+    private int totalPieces;
     private BitSet bitfield;
     // Technically, the above BitSet can be used as its own lock since it's
     // only assigned once. For good programming practice, we will add a dedicated final lock
@@ -56,6 +56,8 @@ public class ThreadManager {
         randomizer = new Random();
         fieldLock = new Object();
         requestBuffer = new HashSet<>();
+        interestedPeers = new ArrayList<>();
+        interestedPeersIndexMap = new HashMap<>();
     }
 
     /**
@@ -78,8 +80,8 @@ public class ThreadManager {
             numPrefNeighbors = fp.getNumPreferredNeighbors();
             optUnchokeInterval = fp.getOptUnchokeInterval();
             unchokeInterval = fp.getUnchokeInterval();
-            int numPieces = fp.getNumPieces();
-            bitfield = new BitSet(numPieces);
+            totalPieces = fp.getNumPieces();
+            bitfield = new BitSet(totalPieces);
 
             neighborTaskManager = new NeighborTaskManager(optUnchokeInterval, unchokeInterval, numPrefNeighbors);
 
@@ -109,7 +111,7 @@ public class ThreadManager {
                         rpi.peerAddress,
                         myPeerInfo.peerId,
                         rpi.peerId,
-                        numPieces);
+                        totalPieces);
                 streams[i].start();
             }
             //set up the other peer connections as "listeners"
@@ -119,7 +121,7 @@ public class ThreadManager {
                         myPeerInfo.peerPort,
                         myPeerInfo.peerAddress,
                         myPeerInfo.peerId,
-                        numPieces);
+                        totalPieces);
                 streams[i].start();
             }
             // Spin up tasks via the task manager
@@ -176,16 +178,9 @@ public class ThreadManager {
         return socket;
     }
 
-    public boolean needPiece(PeerStream ps)
-    {
-        // TODO: Implement
-        return true;
-    }
-
     public boolean hasFullFile()
     {
-        // TODO: Implement
-        return false;
+        return bitfield.cardinality() == totalPieces;
     }
 
     public synchronized void broadcastHaveMessage(byte[] message) {
@@ -224,7 +219,16 @@ public class ThreadManager {
 
     public int getRandomAvailablePieceIndex(PeerStream remote)
     {
-        // If this value stays at -1, no pieces are desired
+        synchronized (fieldLock) {
+            int index = findPieceIndex(remote);
+            if (index != -1)
+                requestBuffer.add(index);
+            return index;
+        }
+    }
+
+    public int findPieceIndex(PeerStream remote)
+    {
         int index = -1;
         ArrayList<Integer> availPieces = remote.getAvailPieces();
         synchronized (fieldLock) {
@@ -254,15 +258,5 @@ public class ThreadManager {
         }
         remote.setAvailPieces(availPieces);
         return index;
-    }
-
-    public ArrayList<RemotePeerInfo> getPeerInfo()
-    {
-        return peers;
-    }
-
-    public RemotePeerInfo getMyPeerInfo()
-    {
-        return myPeerInfo;
     }
 }
