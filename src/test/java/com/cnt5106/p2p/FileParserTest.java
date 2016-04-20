@@ -10,18 +10,20 @@ import java.util.ArrayList;
 
 public class FileParserTest
 {
+    private final static String FILE_NAME   = "TheFile.dat";
+    private final static String TEST_DIR    = "src/test/java/com/cnt5106/p2p/";
     FileParser fileParser = FileParser.getInstance();
     @Test
     public void parsesConfigFile()
     {
         try
         {
-            Path p = FileSystems.getDefault().getPath("Common.cfg");
+            Path p = FileSystems.getDefault().getPath(TEST_DIR + "Common.cfg");
             fileParser.parseConfigFile(p);
             Assert.assertEquals(2, fileParser.getNumPreferredNeighbors());
             Assert.assertEquals(5, fileParser.getUnchokeInterval());
             Assert.assertEquals(15, fileParser.getOptUnchokeInterval());
-            Assert.assertEquals("TheFile.dat", fileParser.getFileName());
+            Assert.assertEquals(FILE_NAME, fileParser.getFileName());
             Assert.assertEquals(10000232, fileParser.getFileSize());
             Assert.assertEquals(32768, fileParser.getPieceSize());
         }
@@ -45,7 +47,7 @@ public class FileParserTest
         targetPeers.add(new RemotePeerInfo(1006, "lin114-05.cise.ufl.edu", 6008, false));
         try
         {
-            Path path = FileSystems.getDefault().getPath("PeerInfo.cfg");
+            Path path = FileSystems.getDefault().getPath(TEST_DIR + "PeerInfo.cfg");
             ArrayList<RemotePeerInfo> peers = fileParser.getPeersFromFile(path);
             for (RemotePeerInfo p : peers)
             {
