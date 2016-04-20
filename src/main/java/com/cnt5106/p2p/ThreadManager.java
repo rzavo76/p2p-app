@@ -192,7 +192,7 @@ public class ThreadManager {
                 {
                     if(peer.hasFullFile())
                     {
-                        peer.done();
+                        peer.setDone();
                     }
                 }
             }
@@ -229,7 +229,9 @@ public class ThreadManager {
     public synchronized void broadcastHaveMessage(byte[] message) {
         for (PeerStream ps : streams)
         {
-            ps.outputByteArray(message);
+            if(ps.isReady()) {
+                ps.outputByteArray(message);
+            }
         }
     }
 

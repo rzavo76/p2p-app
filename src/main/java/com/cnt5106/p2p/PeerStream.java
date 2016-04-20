@@ -29,7 +29,6 @@ public class PeerStream extends Thread {
     private BitSet pieces;
     private int totalPieces;
     private boolean isFull = false;
-    private Sender sender;
     private MessageHandler msgHandler;
     private boolean connector;
     private BTLogger btLogger;
@@ -38,10 +37,12 @@ public class PeerStream extends Thread {
     private long bytesDownloaded;
     private final Object downloadLock;
     private boolean receivedInterested = true;
+    private boolean ready = false;
     private boolean done = false;
     private boolean isOptimUnchokedNeighbor = false;
     private boolean isPreferredNeighbor = false;
     private int outgoingIndexRequest = -1;
+    public Sender sender = null;
     public Socket socket = null;
 
     PeerStream(int port, String hostName, int targetPort, String targetHostName,
@@ -139,6 +140,7 @@ public class PeerStream extends Thread {
             }
             // send out bit field
             outputByteArray(msgHandler.makeMessage(BITFIELD, threadManager.getBitField()));
+            ready = true;
             // start reading messages
             while(!done)
             {
@@ -442,9 +444,9 @@ public class PeerStream extends Thread {
         }
     }
 
-    public void done() { this.done = true; }
+    public void setDone() { this.done = true; }
 
-    public boolean isDone() { return done; }
+    public boolean isReady() { return this.ready; }
 
     public synchronized int getTargetPeerID() { return targetPeerID; }
 
