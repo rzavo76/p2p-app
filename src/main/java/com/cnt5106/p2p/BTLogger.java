@@ -16,10 +16,10 @@ public class BTLogger
 { 
     private static SimpleDateFormat sdf;
     private static BTLogger instance = null;
-
 	private int pid;
 
     private BTLogger() {}
+
     public static synchronized BTLogger getInstance() 
     {
     	if(instance == null)
@@ -51,21 +51,19 @@ public class BTLogger
     	toLog.flush();
     	toLog.close();
     }
-	public String socketStarted(boolean isServer)
-	{
-		return String.format("%s: Peer %d makes a server? %b socket.\n",
-				sdf.format(Calendar.getInstance().getTime()), pid, isServer);
-	}
+
 	public String TCPConnectTo(int remote_pid)
 	{
 		return String.format("%s: Peer %d makes a connection to Peer %d.\n",
 			sdf.format(Calendar.getInstance().getTime()), pid, remote_pid);
 	}
+
 	public String TCPConnectFrom(int remote_pid)
 	{
 		return String.format("%s: Peer %d is connected from Peer %d.\n",
 			sdf.format(Calendar.getInstance().getTime()), pid, remote_pid);
 	}
+
 	public String changeOfPrefNeighbors(int[] nid)
 	{
 		StringBuilder neighborList = new StringBuilder();
@@ -78,36 +76,43 @@ public class BTLogger
 		return String.format("%s: Peer %d has the preferred neighbors %s.\n",
 			sdf.format(Calendar.getInstance().getTime()), pid, neighborList);
 	}
+
 	public String changeOfOUNeighbor(int nid)
 	{
 		return String.format("%s: Peer %d has the optimistically unchoked neighbor "
 			+ "%d.\n", sdf.format(Calendar.getInstance().getTime()), pid, nid);
 	}
+
 	public String unchoked(int remote_pid)
 	{
 		return String.format("%s: Peer %d is unchoked by %d.\n",
 			sdf.format(Calendar.getInstance().getTime()), pid, remote_pid);
 	}
+
 	public String choked(int remote_pid)
 	{
 		return String.format("%s: Peer %d is choked by %d.\n",
 			sdf.format(Calendar.getInstance().getTime()), pid, remote_pid);
 	}
+
 	public String receivedHave(int remote_pid, int piece)
 	{
 		return String.format("%s: Peer %d received the 'have' message from %d for the "
 			+ "piece %d.\n", sdf.format(Calendar.getInstance().getTime()), pid, remote_pid, piece);
 	}
+
 	public String receivedInterested(int remote_pid)
 	{
 		return String.format("%s: Peer %d received the 'interested' message from "
 			+ "%d.\n", sdf.format(Calendar.getInstance().getTime()), pid, remote_pid);
 	}
+
 	public String receivedNotInterested(int remote_pid)
 	{
 		return String.format("%s: Peer %d received the 'not interested' message from "
 			+ "%d.\n", sdf.format(Calendar.getInstance().getTime()), pid, remote_pid);
 	}
+
 	public String downloadedPiece(int pieceIndex,
 		int remote_pid, int numberPieces)
 	{
@@ -115,6 +120,7 @@ public class BTLogger
 			+ "the number of pieces it has is %d.\n", sdf.format(Calendar.getInstance().getTime()), 
 			pid, pieceIndex, remote_pid, numberPieces);
 	}
+
 	public String downloadedFile()
 	{
 		return String.format("%s: Peer %d has downloaded the complete file.\n",
