@@ -88,14 +88,32 @@ public class PeerStream extends Thread {
         {
             if (connector)
             {
-                socket = new Socket(targetHostName, port);
-                btLogger.writeToLog(btLogger.socketStarted(!connector));
+                boolean scanning = true;
+                while(scanning)
+                {
+                    try
+                    {
+                        //attempt to connect to socket
+                        socket = new Socket(targetHostName, port);
+                        scanning=false;
+                    }
+                    catch(Exception e)
+                    {
+                        try
+                        {
+                            Thread.sleep(50); //stop for 50 ms and try again
+                        }
+                        catch(InterruptedException ie){
+                            ie.printStackTrace();
+                        }
+                    }
+                }
                 sender = new Sender(socket, peerID);
                 sender.start();
             }
             else
             {
-                btLogger.writeToLog(btLogger.socketStarted(!connector));
+                //socket is open and ready
                 sender = new Sender(socket, peerID);
                 sender.start();
             }
@@ -304,7 +322,6 @@ public class PeerStream extends Thread {
             threadManager.updateInterested(this, true);
         }
         receivedInterested = true;
-
     }
 
     // TODO: Same as above; locally track previous declaration of 'ifInterested' though. If it is a duplicate
@@ -318,7 +335,6 @@ public class PeerStream extends Thread {
             threadManager.updateInterested(this, false);
         }
         receivedInterested = false;
-        // do nothing and wait for next have message to be sent to the peer
     }
 
     private void makeNextREQUESTOrSendNOTINTERESTED() throws Exception
