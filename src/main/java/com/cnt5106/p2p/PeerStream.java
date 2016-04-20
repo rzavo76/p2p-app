@@ -128,7 +128,7 @@ public class PeerStream extends Thread {
                     targetPeerID = peerID;
                 }
                 btLogger.writeToLog(btLogger.TCPConnectFrom(peerID));
-            }/*
+            }
             // send out bit field
             outputByteArray(msgHandler.makeMessage(BITFIELD, threadManager.getBitField()));
             // start reading messages
@@ -158,7 +158,7 @@ public class PeerStream extends Thread {
                 if(!receivedInterested && threadManager.hasFullFile()) {
                     break;
                 }
-            }*/
+            }
             closeSender();
             socket.close();
             running = false;
@@ -313,7 +313,7 @@ public class PeerStream extends Thread {
     {
         if(!receivedInterested)
         {
-            //threadManager.updateInterested(this, true);
+            threadManager.updateInterested(this, true);
         }
         receivedInterested = true;
     }
@@ -326,7 +326,7 @@ public class PeerStream extends Thread {
     {
         if(receivedInterested)
         {
-            //threadManager.updateInterested(this, false);
+            threadManager.updateInterested(this, false);
         }
         receivedInterested = false;
     }

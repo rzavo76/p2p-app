@@ -138,13 +138,11 @@ public class ThreadManager {
                 streams[i].start();
             }
             // Spin up timer for choosing preferred neighbors
-            /*
             prefNeighborsTimer = new Timer();
             prefNeighborsTimer.schedule(
                     new PreferredNeighborsTracker(numPrefNeighbors),
                     0,
                     unchokeInterval * 1000);
-            */
         }
         catch (Exception e)
         {
