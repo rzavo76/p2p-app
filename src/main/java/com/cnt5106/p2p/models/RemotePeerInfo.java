@@ -12,8 +12,6 @@ package com.cnt5106.p2p.models;
 import com.cnt5106.p2p.FileParser;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Random;
 
 public class RemotePeerInfo {

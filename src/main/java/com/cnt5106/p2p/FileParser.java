@@ -4,7 +4,6 @@ package com.cnt5106.p2p;
  */
 import com.cnt5106.p2p.models.RemotePeerInfo;
 
-import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.util.*;
 import java.io.*;

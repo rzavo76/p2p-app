@@ -56,7 +56,6 @@ public class Sender extends Thread {
 		}
 	}
 
-
 	// Blocking Queue is thread safe
 	public void queueMessage(byte[] msg)
 	{

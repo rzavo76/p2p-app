@@ -29,7 +29,6 @@ public class ThreadManager {
     // Technically, the above BitSet can be used as its own lock since it's
     // only assigned once. For good programming practice, we will add a dedicated final lock
     private final Object fieldLock;
-    private int numPrefNeighbors;
 
     private static ThreadManager mThreadMgr;
 

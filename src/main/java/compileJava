@@ -2,4 +2,4 @@ javac com/cnt5106/p2p/StartRemotePeers.java com/cnt5106/p2p/models/RemotePeerInf
 javac com/cnt5106/p2p/peerProcess.java com/cnt5106/p2p/FileParser.java
 javac com/cnt5106/p2p/BTLogger.java
 javac com/cnt5106/p2p/MessageHandler.java com/cnt5106/p2p/models/MessageType.java
-javac com/cnt5106/p2p/ThreadManager.java com/cnt5106/p2p/PeerStream.java com/cnt5106/p2p/Sender.java com/cnt5106/p2p/NetworkThread.java com/cnt5106/p2p/SocketListener.java
+javac com/cnt5106/p2p/ThreadManager.java com/cnt5106/p2p/PeerStream.java com/cnt5106/p2p/Sender.java com/cnt5106/p2p/SocketListener.java
