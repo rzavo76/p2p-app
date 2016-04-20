@@ -101,6 +101,7 @@ public class ThreadManager {
             pcManager.makeFolder();
             // split file if you have it
             if(myPeerInfo.hasFile) {
+                bitfield.flip(0, totalPieces);
                 pcManager.splitFile();
             }
 

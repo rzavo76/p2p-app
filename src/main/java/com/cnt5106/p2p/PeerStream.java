@@ -139,7 +139,7 @@ public class PeerStream extends Thread {
                 btLogger.writeToLog(btLogger.TCPConnectFrom(peerID));
             }
             // send out bit field
-            outputByteArray(msgHandler.makeMessage(BITFIELD, threadManager.getBitField()));
+            outputByteArray(msgHandler.makeMessage(BITFIELD, Arrays.copyOf(threadManager.getBitField(), totalPieces/8 + 1)));
             ready = true;
             // start reading messages
             while(!done)
@@ -151,14 +151,17 @@ public class PeerStream extends Thread {
                 }
                 // use message length to get type and payload
                 int bytesToRead = java.nio.ByteBuffer.wrap(lengthBytes).getInt();
-                MessageType type = MessageType.getMessageTypeFromByte((byte)inStream.read());
-                // Choose what to do based on the message
+                byte[] contents = new byte[bytesToRead];
+                synchronized (downloadLock) {
+                    bytesDownloaded += inStream.read(contents);
+                }
+                MessageType type = MessageType.getMessageTypeFromByte(contents[0]);
+                btLogger.writeToLog("Bytes to read are " + bytesToRead + "\n");
+                btLogger.writeToLog("Type is " + type.getValue() + "\n");
+                // Choose what to do based on the message payload and type
                 if(bytesToRead > 1)
                 {
-                    byte[] payload = new byte[bytesToRead - 1];
-                    synchronized (downloadLock) {
-                        bytesDownloaded += inStream.read(payload);
-                    }
+                    byte[] payload = Arrays.copyOfRange(contents, 1, contents.length);
                     actOnReceive(type, payload);
                 }
                 else
