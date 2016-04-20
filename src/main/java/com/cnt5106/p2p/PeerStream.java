@@ -101,14 +101,12 @@ public class PeerStream extends Thread {
                         }
                     }
                 }
-                btLogger.writeToLog(btLogger.socketStarted(!connector));
                 sender = new Sender(socket, peerID);
                 sender.start();
             }
             else
             {
                 //socket is open and ready
-                btLogger.writeToLog(btLogger.socketStarted(!connector));
                 sender = new Sender(socket, peerID);
                 sender.start();
             }
