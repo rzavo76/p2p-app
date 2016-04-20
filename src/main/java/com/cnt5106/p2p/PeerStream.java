@@ -246,7 +246,6 @@ public class PeerStream extends Thread {
         // update bitfield with index
         availPieces.add(pieceIndex);
         pieces.set(pieceIndex);
-        checkFullFile();
         threadManager.hasFullFile();
         // does the peer need anything? - outputs interested or not interested to connected peer
         sendINTERESTEDorNOT();
@@ -295,12 +294,11 @@ public class PeerStream extends Thread {
         // update bitfield
         threadManager.addPieceIndex(pieceIndex);
         // send out global have message
-        //threadManager.broadcastHaveMessage(msgHandler.makeMessage(HAVE, byteArrayPieceIndex));
+        threadManager.broadcastHaveMessage(msgHandler.makeMessage(HAVE, byteArrayPieceIndex));
         // log the piece message
         btLogger.writeToLog(btLogger.downloadedPiece(pieceIndex, targetPeerID, threadManager.currentPieces()));
         // see whether peer needs a piece from the bitfield
         makeNextREQUESTOrSendNOTINTERESTED();
-        checkFullFile();
         if(threadManager.hasFullFile())
         {
             btLogger.writeToLog(btLogger.downloadedFile());
@@ -360,8 +358,6 @@ public class PeerStream extends Thread {
             threadManager.updateInterested(this, false);
         }
         receivedInterested = false;
-        checkFullFile();
-        threadManager.hasFullFile();
     }
 
     private void makeNextREQUESTOrSendNOTINTERESTED() throws Exception
@@ -435,10 +431,12 @@ public class PeerStream extends Thread {
         }
     }
 
-    private void checkFullFile()
+    public boolean checkFullFile()
     {
-        if (pieces.cardinality() == totalPieces)
+        if (pieces.cardinality() == totalPieces) {
             isFull = true;
+        }
+        return isFull;
     }
 
     private synchronized void unchokeRemote()
@@ -519,11 +517,6 @@ public class PeerStream extends Thread {
         }
 
         isOptimUnchokedNeighbor = unchoke;
-    }
-
-    public boolean hasFullFile()
-    {
-        return isFull;
     }
 
     public boolean isPreferredNeighbor()

@@ -203,7 +203,7 @@ public class ThreadManager {
             {
                 for (PeerStream peer : streams)
                 {
-                    if(peer.hasFullFile())
+                    if(peer.checkFullFile())
                     {
                         peer.setDone();
                     }
@@ -244,10 +244,7 @@ public class ThreadManager {
         for (PeerStream ps : streams)
         {
             if(ps.isReadyForHave()) {
-                synchronized(ps.sender.mutex) {
-                    ps.sender.queueMessage(message);
-                    ps.sender.mutex.notify();
-                }
+                ps.outputByteArray(message);
             }
         }
     }

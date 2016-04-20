@@ -42,8 +42,10 @@ public class Sender extends Thread {
 					if(!running) {
 						return;
 					}
-					byte[] next = outgoing.remove();
-					socket.getOutputStream().write(next);
+					while(!outgoing.isEmpty()) {
+						byte[] next = outgoing.remove();
+						socket.getOutputStream().write(next);
+					}
 				}
 			}
 		}
