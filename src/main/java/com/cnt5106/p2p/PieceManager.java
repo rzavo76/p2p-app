@@ -1,6 +1,7 @@
 package com.cnt5106.p2p;
 
 import java.io.*;
+import java.nio.charset.Charset;
 import java.nio.file.*;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -74,11 +75,21 @@ public class PieceManager {
         for(int pieceIndex = 0; pieceIndex < numberOfPieces; ++pieceIndex) //iterate through files
         {
             int start = pieceIndex*pieceSize;
+            start = start == 0 ? start : start - 1;
             // assign correct last byte index if at the last piece
-            int end = (pieceIndex != (numberOfPieces - 1)) ? ((pieceIndex + 1)*pieceSize - 1) : (fileSize - start - 1);
+            int end;
+            if (pieceIndex == numberOfPieces - 1)
+            {
+                end = fileSize % pieceSize + start + 1;
+            }else
+            {
+                end = ((pieceIndex + 1)*pieceSize - 1);
+            }
+            byte[] segment = Arrays.copyOfRange(allPieces, start, end);
+            String s = new String(segment, Charset.defaultCharset());
             // write piece
-            Files.write(fPath.resolve(pieceIndex + "_" + filename),
-                    Arrays.copyOfRange(allPieces, start, end));
+            Files.write(fPath.resolve("/" + pieceIndex + "_" + filename),
+                    segment);
         }
     }
 
@@ -99,8 +110,7 @@ public class PieceManager {
     {
         // read piece peer_pID/filename_pieceIndex.dat into a byte array
         Path fPath = FileSystems.getDefault().getPath("peer_" + pID + "/" + pieceIndex + "_" + filename);
-        byte[] piece = Files.readAllBytes(fPath);
-        return piece;
+        return Files.readAllBytes(fPath);
     }
     public synchronized void mergePieces() throws Exception
     {
