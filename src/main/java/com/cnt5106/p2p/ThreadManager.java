@@ -22,7 +22,7 @@ public class ThreadManager {
     private Timer optUnchokeTimer;
     private Comparator<PeerStream> comparator;
     private Random randomizer;
-    private ServerSocket listener = null;
+    private SocketListener listener = null;
 
     private BitSet bitfield;
     // Technically, the above BitSet can be used as its own lock since it's
@@ -107,10 +107,6 @@ public class ThreadManager {
                 }
             }
             final int numPeers = peers.size() - 1;
-            if(thisIndex < numPeers)
-            {
-                listener = new ServerSocket(myPeerInfo.peerPort);
-            }
             // initialize the array of connections
             streams = new PeerStream[numPeers];
             //set up the peer connections as "listeners" but don't start
@@ -123,6 +119,11 @@ public class ThreadManager {
                         numPieces);
             }
             // connect to every peer that connected before
+            if(thisIndex < numPeers)
+            {
+                listener = new SocketListener(myPeerInfo.peerPort, thisIndex, streams);
+                listener.start();
+            }
             for (int i = 0; i != thisIndex; ++i)
             {
                 RemotePeerInfo rpi = peers.get(i);
@@ -137,28 +138,17 @@ public class ThreadManager {
                 streams[i].start();
             }
             // Spin up timer for choosing preferred neighbors
+            /*
             prefNeighborsTimer = new Timer();
             prefNeighborsTimer.schedule(
                     new PreferredNeighborsTracker(numPrefNeighbors),
                     0,
                     unchokeInterval * 1000);
-            for(int i = thisIndex; i < numPeers; ++i) {
-                streams[i].socket = listener.accept();
-                streams[i].start();
-            }
-            if(thisIndex < numPeers) {
-                listener.close();
-            }
+            */
         }
         catch (Exception e)
         {
             throw e;
-        }
-        finally {
-            try {
-                listener.close();
-            } catch(Exception e)
-            {}
         }
     }
 

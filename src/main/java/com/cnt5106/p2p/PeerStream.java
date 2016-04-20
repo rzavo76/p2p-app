@@ -81,13 +81,33 @@ public class PeerStream extends Thread {
         {
             if (connector)
             {
-                socket = new Socket(targetHostName, port);
+                boolean scanning = true;
+                while(scanning)
+                {
+                    try
+                    {
+                        //attempt to connect to socket
+                        socket = new Socket(targetHostName, port);
+                        scanning=false;
+                    }
+                    catch(Exception e)
+                    {
+                        try
+                        {
+                            Thread.sleep(50); //stop for 50 ms and try again
+                        }
+                        catch(InterruptedException ie){
+                            ie.printStackTrace();
+                        }
+                    }
+                }
                 btLogger.writeToLog(btLogger.socketStarted(!connector));
                 sender = new Sender(socket, peerID);
                 sender.start();
             }
             else
             {
+                //socket is open and ready
                 btLogger.writeToLog(btLogger.socketStarted(!connector));
                 sender = new Sender(socket, peerID);
                 sender.start();
@@ -110,7 +130,7 @@ public class PeerStream extends Thread {
                     targetPeerID = peerID;
                 }
                 btLogger.writeToLog(btLogger.TCPConnectFrom(peerID));
-            }
+            }/*
             // send out bit field
             outputByteArray(msgHandler.makeMessage(BITFIELD, threadManager.getBitField()));
             // start reading messages
@@ -140,7 +160,7 @@ public class PeerStream extends Thread {
                 if(!receivedInterested && threadManager.hasFullFile()) {
                     break;
                 }
-            }
+            }*/
             closeSender();
             socket.close();
             running = false;
@@ -295,10 +315,9 @@ public class PeerStream extends Thread {
     {
         if(!receivedInterested)
         {
-            threadManager.updateInterested(this, true);
+            //threadManager.updateInterested(this, true);
         }
         receivedInterested = true;
-
     }
 
     // TODO: Same as above; locally track previous declaration of 'ifInterested' though. If it is a duplicate
@@ -309,10 +328,9 @@ public class PeerStream extends Thread {
     {
         if(receivedInterested)
         {
-            threadManager.updateInterested(this, false);
+            //threadManager.updateInterested(this, false);
         }
         receivedInterested = false;
-        // do nothing and wait for next have message to be sent to the peer
     }
 
     private void makeNextREQUESTOrSendNOTINTERESTED() throws Exception
