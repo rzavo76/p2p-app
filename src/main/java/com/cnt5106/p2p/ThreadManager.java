@@ -3,7 +3,6 @@ package com.cnt5106.p2p;
 import com.cnt5106.p2p.models.RemotePeerInfo;
 
 import java.io.IOException;
-import java.net.ServerSocket;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.util.*;
@@ -24,6 +23,7 @@ public class ThreadManager {
     private Random randomizer;
     private NeighborTaskManager neighborTaskManager;
     private int totalPieces;
+    private PieceManager pcManager;
     private SocketListener listener = null;
 
     private BitSet bitfield;
@@ -83,6 +83,8 @@ public class ThreadManager {
 
             // Initialize the piece manager
             PieceManager.setInstance(fp.getNumPieces(), fp.getFileSize(), fp.getPieceSize(), myPid, fp.getFileName());
+            pcManager = PieceManager.getInstance();
+
             // find the index of the peer
             int thisIndex;
             for (thisIndex = 0; thisIndex != peers.size(); ++thisIndex)
@@ -93,8 +95,16 @@ public class ThreadManager {
                     break;
                 }
             }
-            final int numPeers = peers.size() - 1;
+
+            // make folder to hold pieces
+            pcManager.makeFolder();
+            // split file if you have it
+            if(myPeerInfo.hasFile) {
+                pcManager.splitFile();
+            }
+
             // initialize the array of connections
+            final int numPeers = peers.size() - 1;
             streams = new PeerStream[numPeers];
             //set up the peer connections as "listeners" but don't start
             for (int i = thisIndex; i < numPeers; ++i)
@@ -105,12 +115,13 @@ public class ThreadManager {
                         myPeerInfo.peerId,
                         totalPieces);
             }
-            // connect to every peer that connected before
+            // start SocketListener to listen for connections and assign to streams
             if(thisIndex < numPeers)
             {
                 listener = new SocketListener(myPeerInfo.peerPort, thisIndex, streams);
                 listener.start();
             }
+            // connect to every peer before this one in the file
             for (int i = 0; i != thisIndex; ++i)
             {
                 RemotePeerInfo rpi = peers.get(i);
@@ -124,7 +135,6 @@ public class ThreadManager {
                         totalPieces);
                 streams[i].start();
             }
-
             // Spin up tasks via the task manager
             neighborTaskManager.runTasks();
         }
@@ -177,19 +187,30 @@ public class ThreadManager {
             }
             if (hasFullFile)
             {
+                boolean terminate = true;
                 for (PeerStream peer : streams)
                 {
-                    if (peer.hasFullFile())
-                        try {
-                            peer.socket.close();
-                        } catch (IOException ioe)
-                        {
-                            ioe.printStackTrace();
-                        }
+                    if(peer.hasFullFile())
+                    {
+                        peer.done();
+                    }
+                    else
+                    {
+                        terminate = false;
+                    }
+                }
+                if(terminate)
+                {
+                    //PieceManager.getInstance().mergePieces();
                 }
             }
         }
         return hasFullFile;
+    }
+
+    public int currentPieces()
+    {
+        return bitfield.cardinality();
     }
 
     public synchronized void broadcastHaveMessage(byte[] message) {

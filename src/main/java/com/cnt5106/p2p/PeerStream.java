@@ -38,7 +38,7 @@ public class PeerStream extends Thread {
     private long bytesDownloaded;
     private final Object downloadLock;
     private boolean receivedInterested = true;
-    private boolean running = true;
+    private boolean done = false;
     private boolean isOptimUnchokedNeighbor = false;
     private boolean isPreferredNeighbor = false;
     private int outgoingIndexRequest = -1;
@@ -95,7 +95,7 @@ public class PeerStream extends Thread {
                     {
                         //attempt to connect to socket
                         socket = new Socket(targetHostName, port);
-                        scanning=false;
+                        scanning = false;
                     }
                     catch(Exception e)
                     {
@@ -108,22 +108,23 @@ public class PeerStream extends Thread {
                         }
                     }
                 }
+                // we connected to the ServerSocket on a different peer!
                 sender = new Sender(socket, peerID);
                 sender.start();
             }
             else
             {
-                //socket is open and ready
+                // ServerSocket on this peer received a connection!
                 sender = new Sender(socket, peerID);
                 sender.start();
             }
             InputStream inStream = socket.getInputStream();
-            byte[] bytes = new byte[32];
+            byte[] handshake = new byte[32];
             synchronized (downloadLock)
             {
-                bytesDownloaded += inStream.read(bytes);
+                bytesDownloaded += inStream.read(handshake);
             }
-            int peerID = msgHandler.readHandshake(bytes);
+            int peerID = msgHandler.readHandshake(handshake);
             if (connector)
             {
                 btLogger.writeToLog(btLogger.TCPConnectTo(peerID));
@@ -162,13 +163,12 @@ public class PeerStream extends Thread {
                 {
                     actOnReceive(type);
                 }
-                if(!receivedInterested && threadManager.hasFullFile()) {
+                if(done) {
                     break;
                 }
             }
             closeSender();
             socket.close();
-            running = false;
         }
         catch (Exception e)
         {
@@ -235,6 +235,8 @@ public class PeerStream extends Thread {
     {
         //get index of piece they have
         int pieceIndex = java.nio.ByteBuffer.wrap(payload).getInt();
+        // log the have message
+        btLogger.writeToLog(btLogger.receivedHave(targetPeerID, pieceIndex));
         // update bitfield with index
         availPieces.add(pieceIndex);
         pieces.set(pieceIndex);
@@ -247,7 +249,7 @@ public class PeerStream extends Thread {
     // TODO: INTERESTED or NOTINTERESTED message and update 'interestingPeer'
     private void BITFIELDReceived(byte[] payload) throws Exception
     {
-        // assign pieces
+        // assign pieces also checks if the remote peer has the full file
         setPiecesWithBitfield(BitSet.valueOf(payload));
         // does the peer need anything? - outputs interested or not interested to connected peer
         sendINTERESTEDorNOT();
@@ -278,20 +280,31 @@ public class PeerStream extends Thread {
         // Update outgoing request check so CHOKE doesn't remove piece index from request buffer
         outgoingIndexRequest = -1;
         // parse payload for piece index and piece
-        int pieceIndex = java.nio.ByteBuffer.wrap(Arrays.copyOfRange(payload, 0, 4)).getInt();
+        byte[] byteArrayPieceIndex = Arrays.copyOfRange(payload, 0, 4);
+        int pieceIndex = java.nio.ByteBuffer.wrap(byteArrayPieceIndex).getInt();
         byte[] piece = Arrays.copyOfRange(payload, 4, payload.length);
         // write piece into file
         pcManager.writePiece(piece, pieceIndex);
-        //update bitfield and send out global have
+        // update bitfield
         threadManager.addPieceIndex(pieceIndex);
+        // send out global have message
+        threadManager.broadcastHaveMessage(msgHandler.makeMessage(HAVE, byteArrayPieceIndex));
+        // log the piece message
+        btLogger.writeToLog(btLogger.downloadedPiece(pieceIndex, targetPeerID, threadManager.currentPieces()));
         // see whether peer needs a piece from the bitfield
         makeNextREQUESTOrSendNOTINTERESTED();
+        if(threadManager.hasFullFile())
+        {
+            btLogger.writeToLog(btLogger.downloadedFile());
+        }
     }
 
     // TODO: Handle by telling the sender to not send anything except INTERESTED or NOTINTERESTED
     // TODO: messages until it receives an UNCHOKE message
     private void CHOKEReceived() throws Exception
     {
+        // log the choke message
+        btLogger.writeToLog(btLogger.choked(targetPeerID));
 		// CHOKE received before PIECE; inform ThreadManager of failed outgoing REQUEST
         if (outgoingIndexRequest != -1)
         {
@@ -309,6 +322,7 @@ public class PeerStream extends Thread {
     // TODO:                this peer's bit field
     private void UNCHOKEReceived() throws Exception
     {
+        btLogger.writeToLog(btLogger.unchoked(targetPeerID));
         makeNextREQUESTOrSendNOTINTERESTED();
     }
 
@@ -317,6 +331,7 @@ public class PeerStream extends Thread {
     // TODO: as well in case the peer was not previously interested. Update: see below
     private void INTERESTEDReceived() throws Exception
     {
+        btLogger.writeToLog(btLogger.receivedInterested(targetPeerID));
         if(!receivedInterested)
         {
             threadManager.updateInterested(this, true);
@@ -330,6 +345,7 @@ public class PeerStream extends Thread {
     // TODO: permanently. This is how the entire process will close out.
     private void NOTINTERESTEDReceived() throws Exception
     {
+        btLogger.writeToLog(btLogger.receivedInterested(targetPeerID));
         if(receivedInterested)
         {
             threadManager.updateInterested(this, false);
@@ -427,7 +443,7 @@ public class PeerStream extends Thread {
         }
     }
 
-    public boolean peerStreamRunning() { return running; }
+    public void done() { this.done = true; }
 
     public synchronized int getTargetPeerID() { return targetPeerID; }
 

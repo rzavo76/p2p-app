@@ -62,11 +62,7 @@ public class Sender extends Thread {
 		outgoing.add(msg);
 	}
 
-	public void clearMessages()
-	{
-
-		outgoing.clear();
-	}
+	public void clearMessages() { outgoing.clear(); }
 
 	public void close() { this.running = false; }
 }
