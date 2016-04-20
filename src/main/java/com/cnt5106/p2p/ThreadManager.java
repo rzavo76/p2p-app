@@ -201,7 +201,17 @@ public class ThreadManager {
                 }
                 if(terminate)
                 {
-                    //PieceManager.getInstance().mergePieces();
+                    try {
+                        PieceManager.getInstance().mergePieces();
+                    }
+                    catch(Exception e) {
+                        try {
+                            BTLogger.getInstance().writeToLog(Arrays.toString(e.getStackTrace()));
+                        }
+                        catch (IOException ioe) {
+                            e.printStackTrace();
+                        }
+                    }
                 }
             }
         }

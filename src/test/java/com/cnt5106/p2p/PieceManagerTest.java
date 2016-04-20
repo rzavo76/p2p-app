@@ -55,4 +55,22 @@ public class PieceManagerTest {
             e.printStackTrace();
         }
     }
+    @Test
+    public void writeAndReadFile()
+    {
+        try{
+            System.out.println("Testing write and read file capabilities...");
+            PieceManager.setInstance(PIECE_COUNT, FILE_SIZE, PIECE_SIZE, PID, FILE_NAME);
+            PieceManager pm = PieceManager.getInstance();
+            pm.makeFolder();
+            String hi = "Hello file world!";
+            pm.writePiece(hi.getBytes(), 666);
+            byte[] newData = pm.readPiece(666);
+            Assert.assertArrayEquals(hi.getBytes(), newData);
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+    }
 }

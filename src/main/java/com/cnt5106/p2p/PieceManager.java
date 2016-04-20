@@ -23,6 +23,7 @@ public class PieceManager {
     private int pieceSize;
     private int pID;
     private String filename;
+    private Path fPath;
 
 
     private PieceManager(int numberOfPieces, int fileSize, int pieceSize, int pID, String filename) {
@@ -94,32 +95,34 @@ public class PieceManager {
     public void makeFolder() throws Exception
     {
         // make directory peer_pID
-        Path fPath = FileSystems.getDefault().getPath("peer_" + pID);
-        Files.createDirectories(fPath);
+        fPath = FileSystems.getDefault().getPath("peer_" + pID);
+        if(!Files.exists(fPath)) {
+            Files.createDirectories(fPath);
+        }
     }
 
     public synchronized void writePiece(byte[] piece, int pieceIndex) throws Exception
     {
         // write byte array piece into peer_pID/filename_pieceIndex.dat
-        Path fPath = FileSystems.getDefault().getPath("peer_" + pID + "/" + pieceIndex + "_" + filename);
-        Files.write(fPath, piece);
+        Path fPathWrite = fPath.resolve(pieceIndex + "_" + filename);
+        Files.createFile(fPathWrite);
+        Files.write(fPathWrite, piece);
     }
     public byte[] readPiece(int pieceIndex) throws Exception
     {
         // read piece peer_pID/filename_pieceIndex.dat into a byte array
-        Path fPath = FileSystems.getDefault().getPath("peer_" + pID + "/" + pieceIndex + "_" + filename);
-        return Files.readAllBytes(fPath);
+        Path fPathRead = fPath.resolve(pieceIndex + "_" + filename);
+        return Files.readAllBytes(fPathRead);
     }
     public synchronized void mergePieces() throws Exception
     {
-        Path fPathSource = FileSystems.getDefault().getPath("peer_" + pID);
         //create buffered file write location
-        Path outputFile = fPathSource.resolve(filename);
+        Path outputFile = fPath.resolve(filename);
         Files.createFile(outputFile);
         BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(outputFile.toString(), true));
         for(int pieceIndex = 0; pieceIndex < numberOfPieces; ++pieceIndex) //iterate through files
         {
-            Path currSource = fPathSource.resolve(pieceIndex + "_" + filename);
+            Path currSource = fPath.resolve(pieceIndex + "_" + filename);
             // append each piece to the end of the file
             out.write(Files.readAllBytes(currSource));
             // delete piece
