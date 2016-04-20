@@ -36,8 +36,9 @@ public class PeerStream extends Thread {
     private ThreadManager threadManager;
     private long bytesDownloaded;
     private final Object downloadLock;
-    private boolean receivedInterested = true;
-    private boolean ready = false;
+    private boolean receivedInterested = false;
+    private boolean readyForHave = false;
+    private boolean readyToSend = false;
     private boolean done = false;
     private boolean isOptimUnchokedNeighbor = false;
     private boolean isPreferredNeighbor = false;
@@ -140,7 +141,7 @@ public class PeerStream extends Thread {
             }
             // send out bit field
             outputByteArray(msgHandler.makeMessage(BITFIELD, Arrays.copyOf(threadManager.getBitField(), totalPieces/8 + 1)));
-            ready = true;
+            readyForHave = true;
             // start reading messages
             while(!done)
             {
@@ -333,6 +334,7 @@ public class PeerStream extends Thread {
     // TODO: as well in case the peer was not previously interested. Update: see below
     private void INTERESTEDReceived() throws Exception
     {
+        readyToSend = true;
         btLogger.writeToLog(btLogger.receivedInterested(targetPeerID));
         if(!receivedInterested)
         {
@@ -402,7 +404,7 @@ public class PeerStream extends Thread {
     {
         try {
             sender.clearMessages();
-            sender.queueMessage(msgHandler.makeMessage(MessageType.CHOKE));
+            outputByteArray(msgHandler.makeMessage(MessageType.CHOKE));
         }
         catch (Exception e)
         {
@@ -432,7 +434,7 @@ public class PeerStream extends Thread {
     private synchronized void unchokeRemote()
     {
         try {
-            sender.queueMessage(msgHandler.makeMessage(MessageType.UNCHOKE));
+            outputByteArray(msgHandler.makeMessage(MessageType.UNCHOKE));
         }
         catch (Exception e)
         {
@@ -447,7 +449,9 @@ public class PeerStream extends Thread {
 
     public void setDone() { this.done = true; }
 
-    public boolean isReady() { return this.ready; }
+    public boolean isReadyToSend() { return readyToSend; }
+
+    public boolean isReadyForHave() { return readyForHave; }
 
     public synchronized int getTargetPeerID() { return targetPeerID; }
 

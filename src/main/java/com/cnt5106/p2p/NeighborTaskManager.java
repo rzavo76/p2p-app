@@ -1,6 +1,7 @@
 package com.cnt5106.p2p;
 
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.util.*;
 
 /**
@@ -160,6 +161,7 @@ class PreferredNeighborsTracker extends TimerTask {
         ThreadManager tm = ThreadManager.getInstance();
         HashSet<PeerStream> newPrefs = new HashSet<>(numPreferredNeighbors);
         ArrayList<PeerStream> interestedNeighbors = tm.getInterestedNeighbors();
+        ArrayList<PeerStream> removedInterestedNeighbors = new ArrayList<PeerStream>();
         int newPrefIDs[] = new int[numPreferredNeighbors];
         if (tm.hasFullFile())
         {
@@ -170,9 +172,14 @@ class PreferredNeighborsTracker extends TimerTask {
                  PeerStream prefNeighbor = interestedNeighbors.get(nextIndex);
                  newPrefIDs[i] = prefNeighbor.getTargetPeerID();
                  interestedNeighbors.set(nextIndex, interestedNeighbors.get(lastIndex));
+                 removedInterestedNeighbors.add(interestedNeighbors.get(lastIndex));
                  interestedNeighbors.remove(lastIndex);
                  newPrefs.add(prefNeighbor);
              }
+            for (PeerStream ps : removedInterestedNeighbors)
+            {
+                interestedNeighbors.add(ps);
+            }
         }
         else
         {

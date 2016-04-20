@@ -138,6 +138,18 @@ public class ThreadManager {
                 streams[i].start();
             }
             // Spin up tasks via the task manager
+            boolean ready = false;
+            while(!ready)
+            {
+                for(PeerStream ps : streams)
+                {
+                    if(ps.isReadyToSend())
+                    {
+                        ready = true;
+                        break;
+                    }
+                }
+            }
             neighborTaskManager.runTasks();
         }
         catch (Exception e)
@@ -230,7 +242,7 @@ public class ThreadManager {
     public synchronized void broadcastHaveMessage(byte[] message) {
         for (PeerStream ps : streams)
         {
-            if(ps.isReady()) {
+            if(ps.isReadyForHave()) {
                 ps.outputByteArray(message);
             }
         }
