@@ -2,7 +2,6 @@ package com.cnt5106.p2p;
 
 import com.cnt5106.p2p.models.RemotePeerInfo;
 
-import java.net.ServerSocket;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.util.*;
@@ -170,6 +169,11 @@ public class ThreadManager {
     public boolean hasFullFile()
     {
         return bitfield.cardinality() == totalPieces;
+    }
+
+    public int currentPieces()
+    {
+        return bitfield.cardinality();
     }
 
     public synchronized void broadcastHaveMessage(byte[] message) {

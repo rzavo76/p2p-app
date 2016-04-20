@@ -235,6 +235,8 @@ public class PeerStream extends Thread {
     {
         //get index of piece they have
         int pieceIndex = java.nio.ByteBuffer.wrap(payload).getInt();
+        // log the have message
+        btLogger.receivedHave(targetPeerID, pieceIndex);
         // update bitfield with index
         availPieces.add(pieceIndex);
         pieces.set(pieceIndex);
@@ -284,6 +286,8 @@ public class PeerStream extends Thread {
         pcManager.writePiece(piece, pieceIndex);
         //update bitfield and send out global have
         threadManager.addPieceIndex(pieceIndex);
+        // log the piece message
+        btLogger.downloadedPiece(pieceIndex, targetPeerID, threadManager.currentPieces());
         // see whether peer needs a piece from the bitfield
         makeNextREQUESTOrSendNOTINTERESTED();
     }
@@ -292,6 +296,8 @@ public class PeerStream extends Thread {
     // TODO: messages until it receives an UNCHOKE message
     private void CHOKEReceived() throws Exception
     {
+        // log the choke message
+        btLogger.choked(targetPeerID);
 		// CHOKE received before PIECE; inform ThreadManager of failed outgoing REQUEST
         if (outgoingIndexRequest != -1)
         {
@@ -309,6 +315,7 @@ public class PeerStream extends Thread {
     // TODO:                this peer's bit field
     private void UNCHOKEReceived() throws Exception
     {
+        btLogger.unchoked(targetPeerID);
         makeNextREQUESTOrSendNOTINTERESTED();
     }
 
@@ -317,6 +324,7 @@ public class PeerStream extends Thread {
     // TODO: as well in case the peer was not previously interested. Update: see below
     private void INTERESTEDReceived() throws Exception
     {
+        btLogger.receivedInterested(targetPeerID);
         if(!receivedInterested)
         {
             threadManager.updateInterested(this, true);
@@ -330,6 +338,7 @@ public class PeerStream extends Thread {
     // TODO: permanently. This is how the entire process will close out.
     private void NOTINTERESTEDReceived() throws Exception
     {
+        btLogger.receivedInterested(targetPeerID);
         if(receivedInterested)
         {
             threadManager.updateInterested(this, false);
