@@ -156,8 +156,6 @@ public class PeerStream extends Thread {
                     bytesDownloaded += inStream.read(contents);
                 }
                 MessageType type = MessageType.getMessageTypeFromByte(contents[0]);
-                btLogger.writeToLog("Bytes to read are " + bytesToRead + "\n");
-                btLogger.writeToLog("Type is " + type.getValue() + "\n");
                 // Choose what to do based on the message payload and type
                 if(bytesToRead > 1)
                 {
@@ -349,7 +347,7 @@ public class PeerStream extends Thread {
     // TODO: permanently. This is how the entire process will close out.
     private void NOTINTERESTEDReceived() throws Exception
     {
-        btLogger.writeToLog(btLogger.receivedInterested(targetPeerID));
+        btLogger.writeToLog(btLogger.receivedNotInterested(targetPeerID));
         if(receivedInterested)
         {
             threadManager.updateInterested(this, false);
@@ -477,7 +475,7 @@ public class PeerStream extends Thread {
         pieces = bitSet;
         for (int i = 0; i != bitSet.size(); ++i)
         {
-            if (bitSet.get(i))
+            if (bitSet.get(i) && !threadManager.hasPieceIndex(i))
                 availPieces.add(i);
         }
         checkFullFile();

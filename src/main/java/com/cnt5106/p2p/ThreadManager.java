@@ -249,6 +249,11 @@ public class ThreadManager {
         }
     }
 
+    public boolean hasPieceIndex(int index)
+    {
+        return bitfield.get(index);
+    }
+
     public byte[] getBitField()
     {
         synchronized (fieldLock) {
