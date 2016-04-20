@@ -72,23 +72,21 @@ public class PieceManager {
         // change path to the directory
         fPath = FileSystems.getDefault().getPath("peer_" + pID);
         // split filename into pieces inside the directory
-        for(int pieceIndex = 0; pieceIndex < numberOfPieces; ++pieceIndex) //iterate through files
+        for(int pieceIndex = 0; pieceIndex < numberOfPieces; ++pieceIndex)
         {
             int start = pieceIndex*pieceSize;
-            start = start == 0 ? start : start - 1;
             // assign correct last byte index if at the last piece
             int end;
             if (pieceIndex == numberOfPieces - 1)
             {
-                end = fileSize % pieceSize + start + 1;
+                end = fileSize;
             }else
             {
-                end = ((pieceIndex + 1)*pieceSize - 1);
+                end = (pieceIndex + 1)*pieceSize;
             }
             byte[] segment = Arrays.copyOfRange(allPieces, start, end);
-            String s = new String(segment, Charset.defaultCharset());
             // write piece
-            Files.write(fPath.resolve("/" + pieceIndex + "_" + filename),
+            Files.write(fPath.resolve(pieceIndex + "_" + filename),
                     segment);
         }
     }
@@ -116,7 +114,9 @@ public class PieceManager {
     {
         Path fPathSource = FileSystems.getDefault().getPath("peer_" + pID);
         //create buffered file write location
-        BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(filename, true));
+        Path outputFile = fPathSource.resolve(filename);
+        Files.createFile(outputFile);
+        BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(outputFile.toString(), true));
         for(int pieceIndex = 0; pieceIndex < numberOfPieces; ++pieceIndex) //iterate through files
         {
             Path currSource = fPathSource.resolve(pieceIndex + "_" + filename);
