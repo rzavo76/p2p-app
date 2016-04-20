@@ -29,7 +29,6 @@ public class PeerStream extends Thread {
     private BitSet pieces;
     private int totalPieces;
     private boolean isFull = false;
-    private Socket socket;
     private Sender sender;
     private MessageHandler msgHandler;
     private boolean connector;
@@ -391,6 +390,7 @@ public class PeerStream extends Thread {
     }
 
     private void checkFullFile()
+    {
         if (pieces.cardinality() == totalPieces)
             isFull = true;
     }

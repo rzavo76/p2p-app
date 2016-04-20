@@ -30,8 +30,6 @@ public class ThreadManager {
     // only assigned once. For good programming practice, we will add a dedicated final lock
     private final Object fieldLock;
     private int numPrefNeighbors;
-    private long unchokeInterval;
-    private long optUnchokeInterval;
 
     private static ThreadManager mThreadMgr;
 
@@ -76,13 +74,11 @@ public class ThreadManager {
             // read peers and common config
             peers = fp.getPeersFromFile(peerInfoFile);
             fp.parseConfigFile(configFile);
-            numPrefNeighbors = fp.getNumPreferredNeighbors();
-            optUnchokeInterval = fp.getOptUnchokeInterval();
-            unchokeInterval = fp.getUnchokeInterval();
+            int numPrefNeighbors = fp.getNumPreferredNeighbors();
             totalPieces = fp.getNumPieces();
             bitfield = new BitSet(totalPieces);
 
-            neighborTaskManager = new NeighborTaskManager(optUnchokeInterval, unchokeInterval, numPrefNeighbors);
+            neighborTaskManager = new NeighborTaskManager(fp.getOptUnchokeInterval(), fp.getUnchokeInterval(), numPrefNeighbors);
 
             // Initialize the piece manager
             PieceManager.setInstance(fp.getNumPieces(), fp.getFileSize(), fp.getPieceSize(), myPid, fp.getFileName());
@@ -134,10 +130,15 @@ public class ThreadManager {
             throw e;
         }
         finally {
-            try {
+            try
+            {
                 listener.close();
-            } catch(Exception e)
-            {}
+            }
+            catch (Exception e)
+            {
+                e.printStackTrace();
+            }
+        }
     }
 
     /**
@@ -173,8 +174,6 @@ public class ThreadManager {
                 interestedPeers.remove(lastIndex);
             }
         }
-    }
-
     }
 
     public boolean hasFullFile()
