@@ -103,6 +103,7 @@ public class ThreadManager {
             if(myPeerInfo.hasFile) {
                 bitfield.flip(0, totalPieces);
                 pcManager.splitFile();
+                hasFullFile = true;
             }
 
             // initialize the array of connections
@@ -195,18 +196,16 @@ public class ThreadManager {
 
     public synchronized boolean hasFullFile()
     {
-        if (!hasFullFile) {
-            synchronized (fieldLock) {
-                hasFullFile = bitfield.cardinality() == totalPieces;
-            }
-            if (hasFullFile)
+        synchronized (fieldLock) {
+            hasFullFile = bitfield.cardinality() == totalPieces;
+        }
+        if (hasFullFile)
+        {
+            for (PeerStream peer : streams)
             {
-                for (PeerStream peer : streams)
+                if(peer.checkFullFile())
                 {
-                    if(peer.checkFullFile())
-                    {
-                        peer.setDone();
-                    }
+                    peer.setDone();
                 }
             }
         }
