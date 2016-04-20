@@ -77,7 +77,7 @@ public class PieceManager {
             // assign correct last byte index if at the last piece
             int end = (pieceIndex != (numberOfPieces - 1)) ? ((pieceIndex + 1)*pieceSize - 1) : (fileSize - start - 1);
             // write piece
-            Files.write(fPath.resolve("/" + pieceIndex + "_" + filename),
+            Files.write(fPath.resolve(pieceIndex + "_" + filename),
                     Arrays.copyOfRange(allPieces, start, end));
         }
     }
