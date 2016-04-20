@@ -491,6 +491,11 @@ public class PeerStream extends Thread {
         isOptimUnchokedNeighbor = unchoke;
     }
 
+    public boolean hasFullFile()
+    {
+        return isFull;
+    }
+
     public boolean isPreferredNeighbor()
     {
         return isPreferredNeighbor;
