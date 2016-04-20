@@ -4,7 +4,6 @@ import com.cnt5106.p2p.models.MessageType;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.InetAddress;
 import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.util.*;
@@ -44,6 +43,7 @@ public class PeerStream extends Thread {
     private boolean isOptimUnchokedNeighbor = false;
     private boolean isPreferredNeighbor = false;
     private int outgoingIndexRequest = -1;
+    public Socket socket = null;
 
     PeerStream(int port, String hostName, int targetPort, String targetHostName,
                int peerID, int targetPeerID, int numberOfPieces) throws Exception
@@ -89,14 +89,13 @@ public class PeerStream extends Thread {
         {
             if (connector)
             {
-                socket = new Socket(InetAddress.getByName(targetHostName), targetPort, InetAddress.getByName(hostname), port);
+                socket = new Socket(targetHostName, port);
                 btLogger.writeToLog(btLogger.socketStarted(!connector));
                 sender = new Sender(socket, peerID);
                 sender.start();
             }
             else
             {
-                socket = threadManager.waitForSocket();
                 btLogger.writeToLog(btLogger.socketStarted(!connector));
                 sender = new Sender(socket, peerID);
                 sender.start();
@@ -360,8 +359,10 @@ public class PeerStream extends Thread {
 
     public void closeSender()
     {
-        sender.close();
-        sender.notify();
+        synchronized(sender.mutex) {
+            sender.close();
+            sender.mutex.notify();
+        }
     }
 
     private synchronized void chokeRemote()
@@ -383,7 +384,10 @@ public class PeerStream extends Thread {
 
     public void outputByteArray(byte[] message)
     {
-        sender.queueMessage(message);
+        synchronized(sender.mutex) {
+            sender.queueMessage(message);
+            sender.mutex.notify();
+        }
     }
 
     private void checkFullFile()

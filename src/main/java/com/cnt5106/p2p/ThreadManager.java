@@ -2,10 +2,7 @@ package com.cnt5106.p2p;
 
 import com.cnt5106.p2p.models.RemotePeerInfo;
 
-import java.net.InetSocketAddress;
 import java.net.ServerSocket;
-import java.net.Socket;
-import java.net.SocketAddress;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.util.*;
@@ -26,6 +23,8 @@ public class ThreadManager {
     private Random randomizer;
     private NeighborTaskManager neighborTaskManager;
     private int totalPieces;
+    private ServerSocket listener = null;
+
     private BitSet bitfield;
     // Technically, the above BitSet can be used as its own lock since it's
     // only assigned once. For good programming practice, we will add a dedicated final lock
@@ -98,8 +97,21 @@ public class ThreadManager {
                 }
             }
             final int numPeers = peers.size() - 1;
+            if(thisIndex < numPeers)
+            {
+                listener = new ServerSocket(myPeerInfo.peerPort);
+            }
             // initialize the array of connections
             streams = new PeerStream[numPeers];
+            //set up the peer connections as "listeners" but don't start
+            for (int i = thisIndex; i < numPeers; ++i)
+            {
+                streams[i] = new PeerStream(
+                        myPeerInfo.peerPort,
+                        myPeerInfo.peerAddress,
+                        myPeerInfo.peerId,
+                        totalPieces);
+            }
             // connect to every peer that connected before
             for (int i = 0; i != thisIndex; ++i)
             {
@@ -114,16 +126,6 @@ public class ThreadManager {
                         totalPieces);
                 streams[i].start();
             }
-            //set up the other peer connections as "listeners"
-            for (int i = thisIndex; i < numPeers; ++i)
-            {
-                streams[i] = new PeerStream(
-                        myPeerInfo.peerPort,
-                        myPeerInfo.peerAddress,
-                        myPeerInfo.peerId,
-                        totalPieces);
-                streams[i].start();
-            }
             // Spin up tasks via the task manager
             neighborTaskManager.runTasks();
         }
@@ -131,12 +133,17 @@ public class ThreadManager {
         {
             throw e;
         }
+        finally {
+            try {
+                listener.close();
+            } catch(Exception e)
+            {}
     }
 
     /**
-     * This beauty of a method uses the interestedPeers ArrayList to actually store the peers in
+     * This method uses the interestedPeers ArrayList to actually store the peers in
      * conjunction with the interestedPeersIndexMap to traverse the ArrayList in O(1) time if a particular
-     * peer must be located and removed from the list.
+     * peer must be located and removed from the list. Time complexity is more important than space complexity.
      *
      * @param stream The PeerStream calling the method
      * @param isInterested If the PeerStream has switched to interested or not interested
@@ -168,14 +175,6 @@ public class ThreadManager {
         }
     }
 
-    public synchronized Socket waitForSocket() throws Exception
-    {
-        //create socket by temporarily accepting from a listener
-        ServerSocket listener = new ServerSocket();
-        listener.bind(new InetSocketAddress(myPeerInfo.peerAddress, myPeerInfo.peerPort));
-        Socket socket = listener.accept();
-        listener.close();
-        return socket;
     }
 
     public boolean hasFullFile()
