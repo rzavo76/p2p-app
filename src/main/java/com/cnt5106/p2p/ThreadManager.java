@@ -216,6 +216,7 @@ public class ThreadManager {
     public synchronized void isDone() {
         if(streamsDone == streams.length) {
             try {
+                neighborTaskManager.close();
                 PieceManager.getInstance().mergePieces();
             }
             catch(Exception e) {
@@ -277,6 +278,26 @@ public class ThreadManager {
     {
         synchronized (fieldLock) {
             requestBuffer.remove(index);
+        }
+        synchronized (this)
+        {
+            for (PeerStream stream : streams)
+            {
+                try {
+                    if (stream.getPieces().get(index))
+                        stream.sendTNTERESTED();
+                }
+                catch (Exception e)
+                {
+                    try {
+                        BTLogger.getInstance().writeToLog(Arrays.toString(e.getStackTrace()));
+                    }
+                    catch (Exception ee)
+                    {
+                        ee.printStackTrace();
+                    }
+                }
+            }
         }
     }
 

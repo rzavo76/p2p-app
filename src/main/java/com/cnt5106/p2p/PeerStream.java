@@ -396,6 +396,10 @@ public class PeerStream extends Thread {
         }
     }
 
+    public void sendTNTERESTED() throws Exception{
+        outputByteArray(msgHandler.makeMessage(INTERESTED));
+    }
+
     public void closeSender()
     {
         synchronized(sender.mutex) {
@@ -460,6 +464,11 @@ public class PeerStream extends Thread {
     public synchronized int getTargetPeerID() { return targetPeerID; }
 
     public long getDownloadRate() { return bytesDownloaded; }
+
+    public BitSet getPieces()
+    {
+        return pieces;
+    }
 
     public void resetDownloadRate() {
         synchronized (downloadLock) {

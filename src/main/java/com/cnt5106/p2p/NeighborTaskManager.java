@@ -33,6 +33,14 @@ public final class NeighborTaskManager {
         this.prefNeighbors = new HashSet<>(numPreferredNeighbors);
     }
 
+    public void close()
+    {
+        prefNeighborTimer.cancel();
+        optUnchokeTimer.cancel();
+        prefNeighborTimer = null;
+        optUnchokeTimer = null;
+    }
+
     public void runTasks()
     {
         prefNeighborTimer.schedule(
