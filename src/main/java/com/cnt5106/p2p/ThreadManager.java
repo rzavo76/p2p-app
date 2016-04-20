@@ -2,6 +2,7 @@ package com.cnt5106.p2p;
 
 import com.cnt5106.p2p.models.RemotePeerInfo;
 
+import java.io.IOException;
 import java.net.ServerSocket;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
@@ -26,6 +27,7 @@ public class ThreadManager {
     private SocketListener listener = null;
 
     private BitSet bitfield;
+    private boolean hasFullFile = false;
     // Technically, the above BitSet can be used as its own lock since it's
     // only assigned once. For good programming practice, we will add a dedicated final lock
     private final Object fieldLock;
@@ -169,7 +171,25 @@ public class ThreadManager {
 
     public boolean hasFullFile()
     {
-        return bitfield.cardinality() == totalPieces;
+        if (!hasFullFile) {
+            synchronized (fieldLock) {
+                hasFullFile = bitfield.cardinality() == totalPieces;
+            }
+            if (hasFullFile)
+            {
+                for (PeerStream peer : streams)
+                {
+                    if (peer.hasFullFile())
+                        try {
+                            peer.socket.close();
+                        } catch (IOException ioe)
+                        {
+                            ioe.printStackTrace();
+                        }
+                }
+            }
+        }
+        return hasFullFile;
     }
 
     public synchronized void broadcastHaveMessage(byte[] message) {
