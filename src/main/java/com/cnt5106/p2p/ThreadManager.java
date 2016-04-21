@@ -169,7 +169,7 @@ public class ThreadManager {
      */
     public synchronized void updateInterested(PeerStream stream, boolean isInterested)
     {
-        if ((hasFullFile() && !stream.checkFullFile()) || isInterested)
+        if ((hasFullFile() && stream.isReadyToSend() && !stream.checkFullFile()) || isInterested)
         {
             // If the PeerStream is already in the ArrayList, we don't care about it.
             if (!interestedPeersIndexMap.containsKey(stream))
