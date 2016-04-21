@@ -154,7 +154,7 @@ public class PeerStream extends Thread {
                     bytesDownloaded += inStream.read(lengthBytes);
                 }
                 // use message length to get type and payload
-                int bytesToRead = java.nio.ByteBuffer.wrap(lengthBytes).getInt();
+                int bytesToRead = ByteBuffer.wrap(lengthBytes).getInt();
                 byte[] contents = new byte[bytesToRead];
                 synchronized (downloadLock) {
                     bytesDownloaded += inStream.read(contents);
@@ -383,7 +383,6 @@ public class PeerStream extends Thread {
 
     public void sendINTERESTEDorNOT() throws Exception
     {
-        // TODO: You can use getRandomPiece for this one too but then it will add it to the request buffer
         // update peer with the status of interested
         if (threadManager.areInterested(this))
         {

@@ -48,7 +48,7 @@ public final class NeighborTaskManager {
                 0,
                 prefNeighborInterval * 1000);
         optUnchokeTimer.schedule(
-                new OptimisicallyUnchokeTracker(this),
+                new OptimisticallyUnchokeTracker(this),
                 0, optUnchokeInterval * 1000);
     }
 
@@ -67,13 +67,13 @@ public final class NeighborTaskManager {
 /**
  * Repeating task to randomly determine the next optimistically unchoked neighbor selection
  */
-class OptimisicallyUnchokeTracker extends TimerTask {
+class OptimisticallyUnchokeTracker extends TimerTask {
 
     private final NeighborTaskManager manager;
     private Random randomizer;
     private PeerStream current;
 
-    public OptimisicallyUnchokeTracker(NeighborTaskManager manager)
+    public OptimisticallyUnchokeTracker(NeighborTaskManager manager)
     {
         this.manager = manager;
         this.randomizer = new Random();
@@ -94,7 +94,7 @@ class OptimisicallyUnchokeTracker extends TimerTask {
             for (int i = 0; i < copyInterest.size(); ++i) {
                 // Prune the list of interested PeerStreams so no Preferred Neighbors remain
                 if (prefNeighbors.contains(copyInterest.get(i))) {
-                    int lastIndex = prefNeighbors.size() - 1;
+                    int lastIndex = copyInterest.size() - 1;
                     copyInterest.set(i, copyInterest.get(lastIndex));
                     copyInterest.remove(lastIndex);
                 }
