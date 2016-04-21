@@ -323,22 +323,12 @@ public class PeerStream extends Thread {
         }
     }
 
-    // TODO: There are two scenarios: We receive an UNCHOKE when we don't actually want anything from
-    // TODO: this peer, or we still want something.
-    // TODO: Former case:   I can't see this happening unless the NOTINTERESTED message is still in
-    // TODO:                transit. It's probably safest to send another NOTINTERESTED message.
-    // TODO: Latter case:   Send out a REQUEST message for a random piece by alerting ThreadManager,
-    // TODO:                who will synchronously choose a random required piece that matches with
-    // TODO:                this peer's bit field
     private void UNCHOKEReceived() throws Exception
     {
         btLogger.writeToLog(btLogger.unchoked(targetPeerID));
         makeNextREQUESTOrSendNOTINTERESTED();
     }
 
-    // TODO: Sort out the peers who are interested and not interested; random selection should be only for those
-    // TODO: who are interested. ThreadManager has to maintain the mutable list. Has to check for interested
-    // TODO: as well in case the peer was not previously interested. Update: see below
     private void INTERESTEDReceived() throws Exception
     {
         readyToSend = true;

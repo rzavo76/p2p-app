@@ -169,7 +169,7 @@ public class ThreadManager {
      */
     public synchronized void updateInterested(PeerStream stream, boolean isInterested)
     {
-        if (isInterested)
+        if ((hasFullFile() && !stream.checkFullFile()) || isInterested)
         {
             // If the PeerStream is already in the ArrayList, we don't care about it.
             if (!interestedPeersIndexMap.containsKey(stream))
@@ -349,7 +349,6 @@ public class ThreadManager {
                 }
             }
         }
-        remote.setAvailPieces(availPieces);
         return index;
     }
 
