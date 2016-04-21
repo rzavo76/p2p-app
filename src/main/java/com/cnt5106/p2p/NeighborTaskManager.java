@@ -246,19 +246,7 @@ class PreferredNeighborsTracker extends TimerTask {
                 // Every new preferred neighbor must be set
             }
             for (PeerStream ps : currentPrefNeighbors) {
-                try {
-                    ps.outputByteArray(MessageHandler.getInstance().makeMessage(MessageType.CHOKE));
-                }
-                catch (Exception e)
-                {
-                    try {
-                        log.writeToLog(Arrays.toString(e.getStackTrace()));
-                    }
-                    catch (Exception ee)
-                    {
-                        ee.printStackTrace();
-                    }
-                }
+                ps.setPreferredNeighbor(false);
             }
             manager.setPrefNeighbors(newPrefs);
         }
