@@ -188,8 +188,11 @@ public class ThreadManager {
                 // the end of the array for constant time complexity!!!!
                 int index = interestedPeersIndexMap.remove(stream);
                 int lastIndex = interestedPeers.size() - 1;
-                interestedPeers.set(index, interestedPeers.get(lastIndex));
-                interestedPeersIndexMap.put(interestedPeers.get(lastIndex), index);
+                if (index != lastIndex)
+                {
+                    interestedPeers.set(index, interestedPeers.get(lastIndex));
+                    interestedPeersIndexMap.put(interestedPeers.get(lastIndex), index);
+                }
                 interestedPeers.remove(lastIndex);
             }
         }
