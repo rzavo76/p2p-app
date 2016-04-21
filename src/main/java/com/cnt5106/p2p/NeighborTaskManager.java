@@ -174,7 +174,7 @@ class PreferredNeighborsTracker extends TimerTask {
         HashSet<PeerStream> newPrefs = new HashSet<>(numPreferredNeighbors);
         ArrayList<PeerStream> interestedNeighbors = tm.getInterestedNeighbors();
         ArrayList<PeerStream> removedInterestedNeighbors = new ArrayList<PeerStream>();
-        int newPrefIDs[] = new int[numPreferredNeighbors];
+        ArrayList<Integer> newPrefIDs = new ArrayList<>();
         if (tm.hasFullFile())
         {
              for (int i = 0; i != numPreferredNeighbors && !interestedNeighbors.isEmpty(); ++i)
@@ -182,7 +182,7 @@ class PreferredNeighborsTracker extends TimerTask {
                  int nextIndex = randomizer.nextInt(interestedNeighbors.size());
                  int lastIndex = interestedNeighbors.size() - 1;
                  PeerStream prefNeighbor = interestedNeighbors.get(nextIndex);
-                 newPrefIDs[i] = prefNeighbor.getTargetPeerID();
+                 newPrefIDs.add(prefNeighbor.getTargetPeerID());
                  interestedNeighbors.set(nextIndex, interestedNeighbors.get(lastIndex));
                  removedInterestedNeighbors.add(interestedNeighbors.get(lastIndex));
                  interestedNeighbors.remove(lastIndex);
@@ -199,13 +199,18 @@ class PreferredNeighborsTracker extends TimerTask {
             for (int i = 0; i != numPreferredNeighbors && !orderedStreams.isEmpty(); ++i)
             {
                 PeerStream prefNeighbor = orderedStreams.poll();
-                newPrefIDs[i] = prefNeighbor.getTargetPeerID();
+                newPrefIDs.add(prefNeighbor.getTargetPeerID());
                 newPrefs.add(prefNeighbor);
                 prefNeighbor.resetDownloadRate();
             }
         }
         try {
-            log.writeToLog(log.changeOfPrefNeighbors(newPrefIDs));
+            if (!newPrefIDs.isEmpty()) {
+                int newPrefArray[] = new int[newPrefIDs.size()];
+                for (int i = 0; i != newPrefIDs.size(); ++i)
+                    newPrefArray[i] = newPrefIDs.get(i);
+                log.writeToLog(log.changeOfPrefNeighbors(newPrefArray));
+            }
         }
         catch (IOException ioe) {
             ioe.printStackTrace();
