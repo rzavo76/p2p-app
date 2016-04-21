@@ -487,7 +487,7 @@ public class PeerStream extends Thread {
         pieces = bitSet;
         for (int i = 0; i != bitSet.size(); ++i)
         {
-            if (bitSet.get(i) && !threadManager.hasPieceIndex(i))
+            if (bitSet.get(i))
                 availPieces.add(i);
         }
         checkFullFile();
