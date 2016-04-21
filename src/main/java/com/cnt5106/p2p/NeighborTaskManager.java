@@ -123,6 +123,7 @@ class OptimisticallyUnchokeTracker extends TimerTask {
                     next.setOptimUnchokedNeighbor(true);
                     current = next;
                     try {
+                        next.outputByteArray(MessageHandler.getInstance().makeMessage(MessageType.UNCHOKE));
                         log.writeToLog(log.changeOfOUNeighbor(current.getTargetPeerID()));
                     }
                     catch (Exception e)
@@ -231,6 +232,7 @@ class PreferredNeighborsTracker extends TimerTask {
                     currentPrefNeighbors.remove(ps);
                 }
                 try {
+                    ps.setPreferredNeighbor(true);
                     ps.outputByteArray(MessageHandler.getInstance().makeMessage(MessageType.UNCHOKE));
                 }
                 catch (Exception e)
