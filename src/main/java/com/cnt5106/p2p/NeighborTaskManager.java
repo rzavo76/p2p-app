@@ -1,5 +1,7 @@
 package com.cnt5106.p2p;
 
+import com.cnt5106.p2p.models.MessageType;
+
 import java.io.IOException;
 import java.lang.reflect.Array;
 import java.util.*;
@@ -228,13 +230,35 @@ class PreferredNeighborsTracker extends TimerTask {
                 if (currentPrefNeighbors.contains(ps)) {
                     currentPrefNeighbors.remove(ps);
                 }
-                // Every new preferred neighbor must be set
-                else {
-                    ps.setPreferredNeighbor(true);
+                try {
+                    ps.outputByteArray(MessageHandler.getInstance().makeMessage(MessageType.UNCHOKE));
                 }
+                catch (Exception e)
+                {
+                    try {
+                        log.writeToLog(Arrays.toString(e.getStackTrace()));
+                    }
+                    catch (Exception ee)
+                    {
+                        ee.printStackTrace();
+                    }
+                }
+                // Every new preferred neighbor must be set
             }
             for (PeerStream ps : currentPrefNeighbors) {
-                ps.setPreferredNeighbor(false);
+                try {
+                    ps.outputByteArray(MessageHandler.getInstance().makeMessage(MessageType.CHOKE));
+                }
+                catch (Exception e)
+                {
+                    try {
+                        log.writeToLog(Arrays.toString(e.getStackTrace()));
+                    }
+                    catch (Exception ee)
+                    {
+                        ee.printStackTrace();
+                    }
+                }
             }
             manager.setPrefNeighbors(newPrefs);
         }
