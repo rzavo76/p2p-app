@@ -349,6 +349,7 @@ public class ThreadManager {
                 }
             }
         }
+        remote.setAvailPieces(availPieces);
         return index;
     }
 
