@@ -83,6 +83,7 @@ class OptimisticallyUnchokeTracker extends TimerTask {
     @Override
     public void run()
     {
+        BTLogger log = BTLogger.getInstance();
         HashSet<PeerStream> prefNeighbors;
         synchronized (manager) {
             prefNeighbors = manager.getPrefNeighbors();
@@ -118,6 +119,14 @@ class OptimisticallyUnchokeTracker extends TimerTask {
                         current.setOptimUnchokedNeighbor(false);
                     }
                     next.setOptimUnchokedNeighbor(true);
+                    current = next;
+                    try {
+                        log.writeToLog(log.changeOfOUNeighbor(current.getTargetPeerID()));
+                    }
+                    catch (Exception e)
+                    {
+                        e.printStackTrace();
+                    }
                 }
             }
         }
@@ -168,30 +177,27 @@ class PreferredNeighborsTracker extends TimerTask {
     @Override
     public void run()
     {
-
         BTLogger log = BTLogger.getInstance();
         ThreadManager tm = ThreadManager.getInstance();
         HashSet<PeerStream> newPrefs = new HashSet<>(numPreferredNeighbors);
         ArrayList<PeerStream> interestedNeighbors = tm.getInterestedNeighbors();
-        ArrayList<PeerStream> removedInterestedNeighbors = new ArrayList<PeerStream>();
+        ArrayList<PeerStream> copyNeighbors = new ArrayList<>(interestedNeighbors.size());
+        for (PeerStream ps : interestedNeighbors)
+            copyNeighbors.add(ps);
         ArrayList<Integer> newPrefIDs = new ArrayList<>();
         if (tm.hasFullFile())
         {
-             for (int i = 0; i != numPreferredNeighbors && !interestedNeighbors.isEmpty(); ++i)
+             for (int i = 0; i != numPreferredNeighbors && !copyNeighbors.isEmpty(); ++i)
              {
-                 int nextIndex = randomizer.nextInt(interestedNeighbors.size());
-                 int lastIndex = interestedNeighbors.size() - 1;
-                 PeerStream prefNeighbor = interestedNeighbors.get(nextIndex);
+                 int nextIndex = randomizer.nextInt(copyNeighbors.size());
+                 int lastIndex = copyNeighbors.size() - 1;
+                 PeerStream prefNeighbor = copyNeighbors.get(nextIndex);
                  newPrefIDs.add(prefNeighbor.getTargetPeerID());
-                 interestedNeighbors.set(nextIndex, interestedNeighbors.get(lastIndex));
-                 removedInterestedNeighbors.add(interestedNeighbors.get(lastIndex));
-                 interestedNeighbors.remove(lastIndex);
+                 copyNeighbors.set(nextIndex, copyNeighbors.get(lastIndex));
+                 copyNeighbors.add(prefNeighbor);
+                 copyNeighbors.remove(lastIndex);
                  newPrefs.add(prefNeighbor);
              }
-            for (PeerStream ps : removedInterestedNeighbors)
-            {
-                interestedNeighbors.add(ps);
-            }
         }
         else
         {
