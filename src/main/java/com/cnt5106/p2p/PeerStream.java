@@ -502,8 +502,16 @@ public class PeerStream extends Thread {
     {
         if (unchoke)
         {
-            if (!isOptimUnchokedNeighbor && !isPreferredNeighbor)
+            if (!isOptimUnchokedNeighbor && !isPreferredNeighbor) {
+                try{
+                    outputByteArray(MessageHandler.getInstance().makeMessage(BITFIELD, threadManager.getBitField()));
+                }
+                catch (Exception e)
+                {
+                    e.printStackTrace();
+                }
                 unchokeRemote();
+            }
         }
         else
         {
@@ -525,6 +533,13 @@ public class PeerStream extends Thread {
         {
             if (!isOptimUnchokedNeighbor && !isPreferredNeighbor)
             {
+                try{
+                    outputByteArray(MessageHandler.getInstance().makeMessage(BITFIELD, threadManager.getBitField()));
+                }
+                catch (Exception e)
+                {
+                    e.printStackTrace();
+                }
                 unchokeRemote();
             }
         }
