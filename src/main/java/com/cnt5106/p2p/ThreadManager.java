@@ -7,6 +7,8 @@ import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.util.*;
 
+import static com.cnt5106.p2p.models.MessageType.BITFIELD;
+
 /**
  * Created by Dylan Richardson on 3/13/16.
  *
@@ -280,6 +282,23 @@ public class ThreadManager {
         synchronized (fieldLock)
         {
             return bitfield;
+        }
+    }
+
+    public void broadcastBitfield()
+    {
+        for (PeerStream ps : streams)
+        {
+            if (ps.isReadyToSend())
+            {
+                try{
+                    ps.outputByteArray(MessageHandler.getInstance().makeMessage(BITFIELD, getBitField()));
+                }
+                catch (Exception e)
+                {
+                    e.printStackTrace();
+                }
+            }
         }
     }
 
