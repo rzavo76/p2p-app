@@ -431,7 +431,7 @@ public class PeerStream extends Thread {
         }
     }
 
-    public boolean checkFullFile()
+    public synchronized boolean checkFullFile()
     {
         if (pieces.cardinality() == totalPieces) {
             isFull = true;
