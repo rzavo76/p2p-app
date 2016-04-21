@@ -189,6 +189,7 @@ public class ThreadManager {
                 int index = interestedPeersIndexMap.remove(stream);
                 int lastIndex = interestedPeers.size() - 1;
                 interestedPeers.set(index, interestedPeers.get(lastIndex));
+                interestedPeersIndexMap.put(interestedPeers.get(lastIndex), index);
                 interestedPeers.remove(lastIndex);
             }
         }
