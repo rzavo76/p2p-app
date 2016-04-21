@@ -37,6 +37,7 @@ public class PeerStream extends Thread {
     private long bytesDownloaded;
     private final Object downloadLock;
     private final Object queueLock;
+    private boolean hasUpdatedInterested = false;
     private boolean receivedInterested = false;
     private boolean readyForHave = false;
     private boolean readyToSend = false;
@@ -342,9 +343,10 @@ public class PeerStream extends Thread {
     {
         readyToSend = true;
         btLogger.writeToLog(btLogger.receivedInterested(targetPeerID));
-        if(!receivedInterested)
+        if(!receivedInterested || !hasUpdatedInterested)
         {
             threadManager.updateInterested(this, true);
+            hasUpdatedInterested = true;
         }
         receivedInterested = true;
     }
@@ -356,9 +358,10 @@ public class PeerStream extends Thread {
     private void NOTINTERESTEDReceived() throws Exception
     {
         btLogger.writeToLog(btLogger.receivedNotInterested(targetPeerID));
-        if(receivedInterested)
+        if(receivedInterested || !hasUpdatedInterested)
         {
             threadManager.updateInterested(this, false);
+            hasUpdatedInterested = true;
         }
         receivedInterested = false;
     }
