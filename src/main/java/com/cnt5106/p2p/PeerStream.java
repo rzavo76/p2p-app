@@ -170,6 +170,8 @@ public class PeerStream extends Thread {
                 {
                     actOnReceive(type);
                 }
+                checkFullFile();
+                threadManager.hasFullFile();
             }
             closeSender();
             socket.close();
@@ -246,7 +248,6 @@ public class PeerStream extends Thread {
         // update bitfield with index
         availPieces.add(pieceIndex);
         pieces.set(pieceIndex);
-        threadManager.hasFullFile();
         // does the peer need anything? - outputs interested or not interested to connected peer
         sendINTERESTEDorNOT();
     }
