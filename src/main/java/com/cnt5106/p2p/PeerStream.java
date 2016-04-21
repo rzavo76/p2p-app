@@ -172,6 +172,8 @@ public class PeerStream extends Thread {
                 }
                 checkFullFile();
                 threadManager.hasFullFile();
+                Thread.sleep(5);
+                //btLogger.writeToLog(threadManager.getBitSet().toString());
             }
             closeSender();
             socket.close();

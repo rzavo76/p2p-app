@@ -243,9 +243,7 @@ public class ThreadManager {
     public synchronized void broadcastHaveMessage(byte[] message) {
         for (PeerStream ps : streams)
         {
-            if(ps.isReadyForHave()) {
-                ps.outputByteArray(message);
-            }
+            ps.outputByteArray(message);
         }
     }
 
@@ -271,6 +269,14 @@ public class ThreadManager {
     {
         synchronized (fieldLock) {
             return bitfield.toByteArray();
+        }
+    }
+
+    public BitSet getBitSet()
+    {
+        synchronized (fieldLock)
+        {
+            return bitfield;
         }
     }
 
